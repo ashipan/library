@@ -1,4 +1,4 @@
-void insertSort(vector<int>& a){
+void insertionSort(vector<int>& a){
     for(int i = 1; i < a.size(); i++){
         int v = a[i];
         int j = i-1;
