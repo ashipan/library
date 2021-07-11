@@ -1,6 +1,6 @@
 template<typename T>
 void selectionSort(vector<T>& a){
-    T minj;
+    int minj;
     for(int i = 0; i < a.size() - 1; i++){
         minj = i;
         for(int j = i; j < a.size(); j++){
