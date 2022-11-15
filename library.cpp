@@ -209,12 +209,15 @@ mint comb(int a, int b){
 
 //COMPRESS
 template<typename T>
-unordered_map<T, T> compress(vector<T> a) {
-  unordered_map<T, T> mp;
+tuple<unordered_map<T, T>, unordered_map<T, T>> compress(vector<T> a) {
+  unordered_map<T, T> mp;  // original_value to compressed_index
+  unordered_map<T, T> mpp; // compressed_index to original_value
   sort(a.begin(), a.end());
   a.erase(unique(a.begin(), a.end()), a.end());
-  for(int i = 0; i < a.size(); i++) mp[a[i]] = i;
-  return mp;
+  for(int i = 0; i < a.size(); i++) {
+    mp[a[i]] = i; mpp[i] = a[i];
+  }
+  return {mp, mpp};
 }
 
 //Coodintate Compression
@@ -637,7 +640,7 @@ struct mint {
   bool operator!=(const mint& a) const { return x != a.x;}
 };
 mint ex(mint x, ll t) { return x.pow(t);}
-istream& operator>>(istream& i, mint& a) { return i>>a.x;}
+istream& operator>>(istream& i, mint& a) { unsigned long long t; i>>t; a=mint(t); return i;}
 ostream& operator<<(ostream& o, const mint& a) { return o<<a.x;}
 
 
