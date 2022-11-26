@@ -147,6 +147,26 @@ auto pop = [&](){
   }
 };
 
+//BFS/GRID
+auto grid_bfs = [&](int si, int sj) -> vector<vector<int>> {
+  vector<vector<int>> dist(h, vector<int> (w, INF));
+  queue<pair<int, int>> q;
+  dist[si][sj] = 0;
+  q.push(make_pair(si, sj));
+  while (!q.empty()) {
+    auto [i, j] = q.front(); q.pop();
+    for (int dir = 0; dir < 4; dir++) {
+      int ni = i + di[dir], nj = j + dj[dir];
+      if (ni < 0 || ni >= h || nj < 0 || nj >= w) continue;
+      if (s[ni][nj] == '#') continue;
+      if (dist[ni][nj] <= dist[i][j] + 1) continue;
+      dist[ni][nj] = dist[i][j] + 1;
+      q.push(make_pair(ni, nj));
+    }
+  }
+  return dist;
+};
+
 //CHANGE MAX, MIN
 template<typename T1,typename T2>bool chmin(T1& x,const T2&y){if(x>y){x=y;return true;}else return false;}
 template<typename T1,typename T2>bool chmax(T1& x,const T2&y){if(x<y){x=y;return true;}else return false;}
