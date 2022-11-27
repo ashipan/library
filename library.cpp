@@ -1,4 +1,4 @@
-// template
+//template
 #include <bits/stdc++.h>
 #include<boost/multiprecision/cpp_int.hpp>
 #include<boost/multiprecision/cpp_dec_float.hpp>
@@ -324,7 +324,7 @@ vector<ll> divisor(ll n){
 }
 
 
-//edge
+//Edge
 template<typename T=int>
 struct edge{
   int from, to, id; T cost;
@@ -452,12 +452,12 @@ struct frac{
 };
 
 
-// GCD,LCM
+//GCD,LCM
 ll gcd(ll a, ll b) { return b ? gcd(b, a%b) : a;}
 ll lcm(ll a, ll b) { return a/gcd(a, b)*b;}
 
 
-// GraphSCC
+//GraphSCC
 template<typename T=int>
 struct GraphSCC{
 public:
@@ -515,7 +515,7 @@ public:
 };
 
 
-// graphLink
+//GraphLink
 template<typename T>
 struct graphLink{
   vector<int> ord, low, parent, cmp;
@@ -566,7 +566,7 @@ struct graphLink{
 };
 
 
-// IS_PRIME
+//IS_PRIME
 bool is_prime(ll n){
   if(n < 2) return false;
   else if(n == 2) return  true;
@@ -732,7 +732,7 @@ struct SEG{
 };
 
 
-// Lazy Segment Tree(range_min)
+//Lazy Segment Tree(range_min)
 template<typename T>
 struct SEG{
   int n;
@@ -948,7 +948,7 @@ struct LSEG{
 
 
 
-// LCA
+//LCA
 template<typename T>
 struct treeLCA{
   int const MAX_LOG_V;
@@ -999,7 +999,7 @@ struct treeLCA{
   }
 };
 
-// LIS
+//LIS
 template<typename T>
 vector<T> LIS(vector<T>& a){
   int n = (int)a.size();
@@ -1008,7 +1008,7 @@ vector<T> LIS(vector<T>& a){
   return dp;
 }
 
-// PERMUTATION_SUM
+//PERMUTATION_SUM
 ll permutation_sum(ll l, ll r, ll n){ return (l+r)*n/2;}
 mint mod_permutation_sum(ll l, ll r, ll n){ return mint(l+r)*n/2;}
 ll permutation_sum2(ll a, ll d, ll n){ return (2*a + (n-1)*d)*n/2;}
@@ -1017,7 +1017,7 @@ ll permutation_sum3(ll l, ll r, ll d=1){ return (l+r)*(r-l+1)/2;}
 mint mod_permutation_sum3(ll l, ll r, ll d=1){ return mint(l+r)*(r-l+1)/2;}
 
 
-// POWER_MODver. N^k % MOD
+//POWER_MODver. N^k % MOD
 ll mod_pow(ll n, ll k){
   ll res = 1;
   for(; k > 0; k >>= 1){
@@ -1028,7 +1028,7 @@ ll mod_pow(ll n, ll k){
 }
 
 
-// prim
+//Prim
 template<typename T>
 T prim(vector<vector<edge<T>>> &g){
   int n = (int)g.size(); T ans = 0;
@@ -1065,7 +1065,7 @@ vector<pair<ll, ll>> prime_factor(ll n){
 }
 
 
-// Range Maximun Query
+//Range Maximun Query
 template<typename T>
 struct RMQ{
   int n;
@@ -1100,7 +1100,7 @@ struct RMQ{
 };
 
 
-// Range Minimum Query
+//Range Minimum Query
 template<typename T>
 struct RMQ{
   int n;
@@ -1135,7 +1135,7 @@ struct RMQ{
 };
 
 
-// Range Minimum Query -- pair.ver
+//Range Minimum Query -- pair.ver
 template<typename T>
 struct RMQ{
   int n;
@@ -1175,7 +1175,7 @@ struct RMQ{
   }
 };
 
-// Rerooting
+//Rerooting
 template<typename T>
 struct Rerooting{
   struct DP{
@@ -1229,7 +1229,7 @@ struct Rerooting{
 };
 
 
-// SegmentTree
+//SegmentTree
 template<class S, S (*op)(S, S), S (*e)()>
 struct SEG{
   int n, size, log = 0;
@@ -1323,7 +1323,7 @@ struct SEG{
 
 
 
-// topological sort - Tarjan.ver
+//Topological sort - Tarjan.ver
 template<typename T>
 void dfs_t(vector<vector<edge<T>>>& g, int v, vector<bool>& used, vector<int>& ans){
   if(used[v]) return;
@@ -1342,7 +1342,7 @@ vector<int> tsort(vector<vector<edge<T>>>& g){
 }
 
 
-// topological sort - Kahn.ver (Closed circuit detectable)
+//Topological sort - Kahn.ver (Closed circuit detectable)
 template<typename T>
 vector<int> tsort(vector<vector<edge<T>>>& g){
   vector<int> res;
@@ -1363,7 +1363,7 @@ vector<int> tsort(vector<vector<edge<T>>>& g){
 }
 
 
-// TreeHeight
+//TreeHeight
 template<typename T>
 vector<T> treeHeight(vector<vector<edge<T>>> &g){
   int n = (int)g.size();
@@ -1404,7 +1404,7 @@ struct UnionFind {
 };
 
 
-// WAVELETMATRIX
+//WAVELETMATRIX
 struct FullyIndexableDictionary{
   int len, blk;
   vector<unsigned> bit;
@@ -1556,7 +1556,7 @@ struct WaveletMatrix{
 };
 
 
-// Warshall_floyd
+//Warshall_floyd
 bool negative_loop = false;
 template<typename T>
 vector<vector<T>> warshall(vector<vector<edge<T>>> &g){
@@ -1574,7 +1574,7 @@ vector<vector<T>> warshall(vector<vector<edge<T>>> &g){
 }
 
 
-// WEIGHT_UNIONFIND
+//WEIGHT_UNIONFIND
 template<typename T>
 struct WeightUnionFind {
   vector<int> rs, ps;
