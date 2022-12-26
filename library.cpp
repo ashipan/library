@@ -1432,7 +1432,7 @@ struct FullyIndexableDictionary{
   int select(bool v, int i, int l){ return select(v, i+rank(v, l));}
 };
 
-template<class T, int MAXLOG>
+template<class T, int MAXLOG=16>
 struct WaveletMatrix{
   int len;
   FullyIndexableDictionary mat[MAXLOG];
