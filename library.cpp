@@ -1064,6 +1064,81 @@ vector<pair<ll, ll>> prime_factor(ll n){
   return pf;
 }
 
+//PRIME_FACTOR_fastver.(Pollard’s rho algorithm)
+template<typename T>
+T pow_mod(T a, T n, T m) {
+  T res = 1%m;
+  a %= m;
+  for (; n > 0; n >>= 1){
+    if (n&1) res = (res*a)%m;
+    a = (a*a)%m;
+  }
+  return res; // return a^n mod m
+}
+
+bool is_prime(long long n) {
+  if (n <= 1) return false;
+  if (n == 2 || n == 3) return true;
+  if (n%2 == 0) return false;
+  vector<long long> a = {2, 325, 9375, 28178, 450775,
+    9780504, 1795265022};
+  long long s = 0, d = n - 1;
+  for (; d%2 == 0; d >>= 1) s++;
+  for (auto i : a) {
+    if (i%n == 0) return true;
+    long long t, x = pow_mod<__int128_t>(i, d, n);
+    if (x != 1) {
+      for (t = 0; t < s; t++) {
+        if (x == n - 1) break;
+        x = __int128_t(x)*x%n;
+      }
+      if (t == s) return false;
+    }
+  }
+  return true;
+}
+
+vector<pair<long long, long long>> prime_factor(long long n) {
+  auto pollard = [&](long long n) -> long long {
+    if (n%2 == 0) return 2;
+    if (is_prime(n)) return n;
+    auto f = [&](long long x) -> long long {
+      return (__int128_t(x)*x + 1)%n;
+    };
+    long long step = 0;
+    while (true) {
+      long long x = ++step, y = f(x);
+      while (true) {
+        long long p = gcd(y - x + n, n);
+        if (p == 0 || p == n) break;
+        if (p != 1) return p;
+        x = f(x); y = f(f(y));
+      }
+    }
+  };
+  auto f = [&](auto f, long long n) -> vector<long long> {
+    if (n == 1) return {};
+    long long p = pollard(n);
+    if (p == n) return {p};
+    vector<long long> left = f(f, p), right = f(f, n/p);
+    left.insert(left.end(), right.begin(), right.end());
+    sort(left.begin(), left.end());
+    return left;
+  };
+  vector<pair<long long, long long>> pf;
+  auto res = f(f, n);
+  res.erase(unique(res.begin(), res.end()), res.end());
+  for (auto i : res) {
+    long long cnt = 0;
+    while(n%i == 0){
+      n /= i;
+      cnt++;
+    }
+    pf.push_back(make_pair(i, cnt));
+  }
+  return pf;
+}
+
 
 //Range Maximun Query
 template<typename T>
