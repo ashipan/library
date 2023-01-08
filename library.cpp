@@ -567,11 +567,34 @@ struct graphLink{
 
 
 //IS_PRIME
-bool is_prime(ll n){
-  if(n < 2) return false;
-  else if(n == 2) return  true;
-  if(n%2 == 0) return false;
-  for(ll i = 3; i*i <= n; i += 2) if(n%i == 0) return false;
+bool is_prime(long long n) {
+  if (n <= 1) return false;
+  if (n == 2 || n == 3) return true;
+  if (n%2 == 0) return false;
+  auto pow_mod = [&](__int128_t a, __int128_t n, __int128_t m) -> __int128_t {
+    __int128_t res = 1%m;
+    a %= m;
+    for (; n > 0; n >>= 1){
+      if (n&1) res = (res*a)%m;
+      a = (a*a)%m;
+    }
+    return res;
+  };
+  vector<long long> a = {2, 325, 9375, 28178, 450775,
+    9780504, 1795265022};
+  long long s = 0, d = n - 1;
+  for (; d%2 == 0; d >>= 1) s++;
+  for (auto i : a) {
+    if (i%n == 0) return true;
+    long long t, x = pow_mod(i, d, n);
+    if (x != 1) {
+      for (t = 0; t < s; t++) {
+        if (x == n - 1) break;
+        x = __int128_t(x)*x%n;
+      }
+      if (t == s) return false;
+    }
+  }
   return true;
 }
 
@@ -1065,39 +1088,6 @@ vector<pair<ll, ll>> prime_factor(ll n){
 }
 
 //PRIME_FACTOR_fastver.(Pollard’s rho algorithm)
-template<typename T>
-T pow_mod(T a, T n, T m) {
-  T res = 1%m;
-  a %= m;
-  for (; n > 0; n >>= 1){
-    if (n&1) res = (res*a)%m;
-    a = (a*a)%m;
-  }
-  return res; // return a^n mod m
-}
-
-bool is_prime(long long n) {
-  if (n <= 1) return false;
-  if (n == 2 || n == 3) return true;
-  if (n%2 == 0) return false;
-  vector<long long> a = {2, 325, 9375, 28178, 450775,
-    9780504, 1795265022};
-  long long s = 0, d = n - 1;
-  for (; d%2 == 0; d >>= 1) s++;
-  for (auto i : a) {
-    if (i%n == 0) return true;
-    long long t, x = pow_mod<__int128_t>(i, d, n);
-    if (x != 1) {
-      for (t = 0; t < s; t++) {
-        if (x == n - 1) break;
-        x = __int128_t(x)*x%n;
-      }
-      if (t == s) return false;
-    }
-  }
-  return true;
-}
-
 vector<pair<long long, long long>> prime_factor(long long n) {
   auto pollard = [&](long long n) -> long long {
     if (n%2 == 0) return 2;
@@ -1116,7 +1106,7 @@ vector<pair<long long, long long>> prime_factor(long long n) {
       }
     }
   };
-  auto f = [&](auto f, long long n) -> vector<long long> {
+  auto prime_factorize = [&](auto f, long long n) -> vector<long long> {
     if (n == 1) return {};
     long long p = pollard(n);
     if (p == n) return {p};
@@ -1126,7 +1116,7 @@ vector<pair<long long, long long>> prime_factor(long long n) {
     return left;
   };
   vector<pair<long long, long long>> pf;
-  auto res = f(f, n);
+  auto res = prime_factorize(prime_factorize, n);
   res.erase(unique(res.begin(), res.end()), res.end());
   for (auto i : res) {
     long long cnt = 0;
