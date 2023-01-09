@@ -1068,7 +1068,27 @@ T prim(vector<vector<edge<T>>> &g){
   return ans;
 }
 
-//PRIME_FACTOR_fastver.(Pollard’s rho algorithm)
+
+//PRIME_FACTOR
+vector<pair<ll, ll>> prime_factor(ll n){
+  vector<pair<ll, ll>> pf;
+  //if(n == 1) pf.push_back(P(1, 1));
+  for(ll i = 2; i*i <= n; i++){
+    if(n%i == 0){
+      int cnt = 0;
+      while(n%i == 0){
+        n /= i;
+        cnt++;
+      }
+      pf.push_back(pair<ll, ll>(i, cnt));
+    }
+  }
+  if(n != 1) pf.push_back(pair<ll, ll>(n, 1));
+  return pf;
+}
+
+
+//PRIME_FACTOR_fastver.(Pollard’s rho algorithm, *randomized)
 vector<pair<long long, long long>> prime_factor(long long n) {
   auto pollard = [&](long long n) -> long long {
     if (n%2 == 0) return 2;
@@ -1107,25 +1127,6 @@ vector<pair<long long, long long>> prime_factor(long long n) {
     }
     pf.push_back(make_pair(i, cnt));
   }
-  return pf;
-}
-
-
-//PRIME_FACTOR
-vector<pair<ll, ll>> prime_factor(ll n){
-  vector<pair<ll, ll>> pf;
-  //if(n == 1) pf.push_back(P(1, 1));
-  for(ll i = 2; i*i <= n; i++){
-    if(n%i == 0){
-      int cnt = 0;
-      while(n%i == 0){
-        n /= i;
-        cnt++;
-      }
-      pf.push_back(pair<ll, ll>(i, cnt));
-    }
-  }
-  if(n != 1) pf.push_back(pair<ll, ll>(n, 1));
   return pf;
 }
 
