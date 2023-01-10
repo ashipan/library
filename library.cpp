@@ -1670,7 +1670,7 @@ struct WeightUnionFind {
 };
 
 
-// Z-algorithm
+//Z-algorithm
 struct Z {
   int n;
   string s;
