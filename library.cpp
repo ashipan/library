@@ -1670,6 +1670,33 @@ struct WeightUnionFind {
 };
 
 
+//Zobrist Hash
+template <typename T>
+vector<uint64_t> hashing(T a) {
+  int n = (int)a.size();
+  vector<uint64_t> hash(n+1);
+  set<long long> st;
+  struct custom_hash {
+    static uint64_t splitmix64(uint64_t x) {
+      x += 0x9e3779b97f4a7c15;
+      x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+      x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+      return x ^ (x >> 31);
+    }
+    size_t operator() (uint64_t x) const {
+      static const uint64_t FIXED_RANDOM =
+          chrono::steady_clock::now().time_since_epoch().count();
+      return splitmix64(x + FIXED_RANDOM);
+    }
+  }rng;
+  for (int i = 0; i < n; i++) {
+    if (st.count(a[i])) { hash[i+1] = hash[i];}
+    else { st.insert(a[i]); hash[i+1] = hash[i]^rng(a[i]);}
+  }
+  return hash;
+}
+
+
 //Z-algorithm
 struct Z {
   int n;
