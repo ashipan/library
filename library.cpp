@@ -1498,14 +1498,16 @@ struct FullyIndexableDictionary{
   int select(bool v, int i, int l){ return select(v, i+rank(v, l));}
 };
 
-template<class T, int MAXLOG=20>
+template<class T, int MAXLOG=30>
 struct WaveletMatrix{
   int len;
   FullyIndexableDictionary mat[MAXLOG];
   int zs[MAXLOG], buff1[MAXLOG], buff2[MAXLOG];
+  vector<vector<T>> acc;
   static const T npos=-1;
   WaveletMatrix(vector<T> data){
     len = (int)data.size();
+    acc = vector<vector<T>>(MAXLOG, vector<T>(len+1));
     vector<T> ls(len), rs(len);
     for(int dep=0;dep<MAXLOG;dep++){
       mat[dep] = FullyIndexableDictionary(len+1);
@@ -1517,10 +1519,15 @@ struct WaveletMatrix{
       }
       zs[dep] = p;
       mat[dep].build();
+      for(int i=0;i<len;i++){
+        if(!mat[dep][i]) acc[dep][i+1]=data[i];
+        acc[dep][i+1]+=acc[dep][i];
+      }
       swap(ls, data);
       for(int i=0;i<q;i++) data[p+i] = rs[i];
     }
   }
+  
   T access(int k){
     T res = 0;
     for(int dep = 0; dep < MAXLOG; dep++){
@@ -1591,6 +1598,31 @@ struct WaveletMatrix{
   
   // return number of points in [left, right) * [lower, upper)
   int range_freq(int left, int right, T lower, T upper){ return freq_dfs(0, left, right, 0, lower, upper);}
+  
+  // Sum of the first k+1 intervals [l, r) in ascending order
+  T kthLowerSum(int l, int r, int k){
+    assert(r - l > k);
+    assert(l < r);
+    long long kth = 0, res = 0;
+    for(int dep = 0; dep < MAXLOG; dep++){
+      long long p = mat[dep].rank(0, l);
+      long long q = mat[dep].rank(0, r);
+      long long bit = (k < q - p) ? 0 : 1;
+      if(bit){
+        res += acc[dep][r] - acc[dep][l];
+        k -= (q - p);
+        l += zs[dep] - p;
+        r += zs[dep] - q;
+      }
+      else{
+        l = p; r = q;
+      }
+      kth <<= 1;
+      kth |= bit;
+    }
+    res += kth*(k+1);
+    return res;
+  }
   
   pair<int, int> ll(int l, int r, T v){
     int res = 0;
