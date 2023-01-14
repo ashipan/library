@@ -609,6 +609,200 @@ struct graphLink{
 };
 
 
+//ImplicitTreap
+// モノイドの型
+using S = int;
+// S × S → S を計算する関数
+S op(S a, S b) { return a + b; }
+// モノイドの単位元
+S e() { return 0; }
+// 作用素 (!=の定義を必ずする！！)
+using F = int;
+// F × S(区間sizeをszにいれる)
+S mapping(F f, S b, int sz) {
+  return f + b;
+}
+// F × F
+F composition(F a, F b) { return a + b; }
+// 作用素の単位元
+F id() { return 0; }
+
+template <class S, S (*op)(S, S), S (*e)(), class F, S (*mapping)(F, S, int), F (*composition)(F, F), F (*id)()>
+struct ImplicitTreap {
+  struct xorshift {
+    using u32 = uint32_t;
+    u32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
+    xorshift(u32 seed = 0) { z ^= seed; }
+    u32 operator()() {
+      u32 t = x ^ (x << 11);
+      x = y; y = z; z = w;
+      return w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+    }
+  };
+  xorshift rnd;
+  struct Node {
+    S val, acc;
+    F lazy;
+    int pri, cnt;
+    bool rev;
+    Node *l, *r;
+    Node(S val_, int pri_) : val(val_), acc(e()), lazy(id()), pri(pri_), cnt(1), rev(false), l(nullptr), r(nullptr) {}
+  }* root = nullptr;
+  using Tree = Node*;
+  int count(Tree t) { return t ? t->cnt : 0;}
+  S acc(Tree t) { return t ? t->acc : e();}
+  void proc(Tree& t) {
+    if(t) {
+      t->cnt = 1 + count(t->l) + count(t->r);
+      t->acc = op(acc(t->l), op(t->val, acc(t->r)));
+    }
+  }
+  void eval(Tree& t) {
+    if(t and t->rev) {
+      t->rev = false;
+      std::swap(t->l, t->r);
+      if(t->l) t->l->rev ^= 1;
+      if(t->r) t->r->rev ^= 1;
+    }
+    if(t and t->lazy != id()) {
+      if(t->l) {
+        t->l->lazy = composition(t->lazy, t->l->lazy);
+        t->l->acc = mapping(t->lazy, t->l->acc, count(t->l));
+      }
+      if(t->r) {
+        t->r->lazy = composition(t->lazy, t->r->lazy);
+        t->r->acc = mapping(t->lazy, t->r->acc, count(t->r));
+      }
+      t->val = mapping(t->lazy, t->val, 1);
+      t->lazy = id();
+    }
+    proc(t);
+  }
+  void split(Tree t, int key, Tree& l, Tree& r) {
+    if(!t) {
+      l = r = nullptr;
+      return;
+    }
+    eval(t);
+    int implicit_key = count(t->l) + 1;
+    if(key < implicit_key) {
+      split(t->l, key, l, t->l), r = t;
+    } else {
+      split(t->r, key - implicit_key, t->r, r), l = t;
+    }
+    proc(t);
+  }
+  void merge(Tree& t, Tree l, Tree r) {
+    eval(l);
+    eval(r);
+    if(!l or !r)
+      t = l ? l : r;
+    else if(l->pri > r->pri)
+      merge(l->r, l->r, r), t = l;
+    else
+      merge(r->l, l, r->l), t = r;
+    proc(t);
+  }
+  void insert(Tree& t, int key, Tree item) {
+    Tree t1, t2;
+    split(t, key, t1, t2);
+    merge(t1, t1, item);
+    merge(t, t1, t2);
+  }
+  void erase(Tree& t, int key) {
+    Tree t1, t2, t3;
+    split(t, key + 1, t1, t2);
+    split(t1, key, t1, t3);
+    merge(t, t1, t2);
+  }
+  void update(Tree t, int l, int r, F x) {
+    Tree t1, t2, t3;
+    split(t, l, t1, t2);
+    split(t2, r - l, t2, t3);
+    t2->lazy = composition(x, t2->lazy);
+    t2->acc = mapping(x, t2->acc, count(t2));
+    merge(t2, t2, t3);
+    merge(t, t1, t2);
+  }
+  S query(Tree t, int l, int r) {
+    Tree t1, t2, t3;
+    split(t, l, t1, t2);
+    split(t2, r - l, t2, t3);
+    S ret = t2->acc;
+    merge(t2, t2, t3);
+    merge(t, t1, t2);
+    return ret;
+  }
+  int find(Tree t, S x, int offset, bool left = true) {
+    if(op(t->acc, x) == x) {
+      return -1;
+    } else {
+      if(left) {
+        if(t->l and op(t->l->acc, x) != x)
+          return find(t->l, x, offset, left);
+        else
+          return (op(t->val, x) != x) ? offset + count(t->l) : find(t->r, x, offset + count(t->l) + 1, left);
+        
+      } else {
+        if(t->r and op(t->r->acc, x) != x)
+          return find(t->r, x, offset + count(t->l) + 1, left);
+        else
+          return (op(t->val, x) != x) ? offset + count(t->l) : find(t->l, x, offset, left);
+      }
+    }
+  }
+  void reverse(Tree t, int l, int r) {
+    if(l > r) return;
+    Tree t1, t2, t3;
+    split(t, l, t1, t2);
+    split(t2, r - l, t2, t3);
+    t2->rev ^= 1;
+    merge(t2, t2, t3);
+    merge(t, t1, t2);
+  }
+  // [l, r)の先頭がmになるようにシフトさせる。std::rotateと同じ仕様
+  void rotate(Tree t, int l, int m, int r) {
+    reverse(t, l, r);
+    reverse(t, l, l + r - m);
+    reverse(t, l + r - m, r);
+  }
+  
+public:
+  ImplicitTreap() {}
+  ImplicitTreap(std::vector<S> as) {
+    std::reverse(as.begin(), as.end());
+    for(S& a : as) { insert(0, a); }
+  }
+  int size() { return count(root); }
+  void insert(int pos, S x) { insert(root, pos, new Node(x, rnd()));}
+  void update(int l, int r, F x) { update(root, l, r, x);}
+  S query(int l, int r) { return query(root, l, r);}
+  // 二分探索。[l, r)内のkでMonoid::op(tr[k], x) != xとなる最左/最右のもの。存在しない場合は-1
+  // たとえばMinMonoidの場合、x未満の最左/最右の要素の位置を返す
+  int find(int l, int r, S x, bool left = true) {
+    Tree t1, t2, t3;
+    split(root, l, t1, t2);
+    split(t2, r - l, t2, t3);
+    int ret = find(t2, x, l, left);
+    merge(t2, t2, t3);
+    merge(root, t1, t2);
+    return ret;
+  }
+  void erase(int pos) { erase(root, pos);}
+  void reverse(int l, int r) { reverse(root, l, r);}
+  void rotate(int l, int m, int r) { rotate(root, l, m, r);}
+  S operator[](int pos) {
+    Tree t1, t2, t3;
+    split(root, pos + 1, t1, t2);
+    split(t1, pos, t1, t3);
+    S ret = t3->acc;
+    merge(t1, t1, t3);
+    merge(root, t1, t2);
+    return ret;
+  }
+};
+
+
 //IS_PRIME
 bool is_prime(long long n) {
   if (n <= 1) return false;
