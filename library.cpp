@@ -383,7 +383,7 @@ using graph = vector<vector<edge<T>>>;
 
 
 //Eratosthenes
-template<typename T>
+//template<typename T>
 struct Eratosthenes{
   vector<bool> isprime;
   vector<T> sieves;
@@ -1258,6 +1258,28 @@ struct treeLCA{
     return depth[u] + depth[v] - 2*depth[anc];
   }
 };
+
+
+//LCS
+string LCS(string s, string t) {
+  int n = (int)s.size(), m = (int)t.size();
+  vector<vector<int>> dp(n+1, vector<int> (m+1));
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      dp[i+1][j+1] = max(dp[i+1][j], dp[i][j+1]);
+      if (s[i] == t[j]) dp[i+1][j+1] = dp[i][j] + 1;
+    }
+  }
+  string res;
+  while (n + m) {
+    if (n && dp[n][m] == dp[n-1][m]) n--;
+    else if (m && dp[n][m] == dp[n][m-1]) m--;
+    else { n--; m--; res += s[n];}
+  }
+  reverse(res.begin(), res.end());
+  return res;
+}
+
 
 //LIS
 template<typename T>
