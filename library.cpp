@@ -1281,6 +1281,25 @@ string LCS(string s, string t) {
 }
 
 
+//Levenshtein_distance
+template<typename T=int>
+T Levenshtein_distance(string s, string t, T INSERT_COST=1, T DELETE_COST=1, T CHANGE_COST=1) {
+  int n = (int)s.size(), m = (int)t.size();
+  vector<vector<int>> dp(n+1, vector<int> (m+1));
+  for (int i = 0; i <= n; i++) dp[i][0] = i*INSERT_COST;
+  for (int j = 0; j <= m; j++) dp[0][j] = j*INSERT_COST;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= m; j++) {
+      T D = dp[i-1][j] + DELETE_COST;
+      T I = dp[i][j-1] + INSERT_COST;
+      T C = dp[i-1][j-1] + (s[i-1]==t[j-1]?0:CHANGE_COST);
+      dp[i][j] = min({D, I, C});
+    }
+  }
+  return dp[n][m];
+}
+
+
 //LIS
 template<typename T>
 vector<T> LIS(vector<T>& a){
