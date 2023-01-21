@@ -216,16 +216,28 @@ template<typename T1,typename T2>bool chmax(T1& x,const T2&y){if(x<y){x=y;return
 
 
 //Chinese Remainder Theorem
-// x ≡ r (mod m)
-// r = m1*x1+b1
-// r = m2*x2+b2
-pair<ll, ll> ChineseRem(ll b1, ll m1, ll b2, ll m2){
-  ll p, q;
-  ll d = extGCD(m1, m2, p, q); // p is inv of m1/d (mod m2/d)
+// let (r, m) be return value, the solution is x ≡ r (mod. m)
+pair<long long, long long> CRT(const vector<long long>& b, const vector<long long>& m) {
+  long long r = 0, M = 1;
+  for (int i = 0; i < (int)b.size(); i++) {
+    long long p, q;
+    long long d = extGCD(M, m[i], p, q); // p is inv of M/d (mod. m[i]/d)
+    if ((b[i] - r) % d != 0) return make_pair(0, -1);
+    long long tmp = (b[i] - r)/d*p%(m[i]/d);
+    r += M*tmp;
+    M *= m[i]/d;
+  }
+  return make_pair((r%M+M)%M, M);
+}
+
+// x ≡ r (mod m), r = m1*x1+b1 = m2*x2+b2
+pair<long, long> CRT2(long long b1, long long m1, long long b2, long long m2){
+  long long p, q;
+  long long d = extGCD(m1, m2, p, q); // p is inv of m1/d (mod m2/d)
   if((b2 - b1)%d != 0) return make_pair(0, -1); // no answer
-  ll m = m1*(m2/d); // lcm(m1, m2)
-  ll tmp = (b2 - b1)/d*p%(m2/d);
-  ll r = mod(b1 + m1*tmp, m);
+  long long m = m1*(m2/d); // lcm(m1, m2)
+  long long tmp = (b2 - b1)/d*p%(m2/d);
+  long long r = mod(b1 + m1*tmp, m);
   return make_pair(r, m);
 }
 
