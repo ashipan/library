@@ -137,6 +137,227 @@ vector<T> bellman(const vector<vector<edge<T>>> &g, int s){
   return d;
 }
 
+
+//BIGINT
+struct BigInt {
+  using ll = long long;
+  using vll = vector<ll>;
+  constexpr static ll base = 1000000000;
+  constexpr static ll base_digits = 9;
+  vll a;
+  ll sign;
+  BigInt():sign(1){}
+  BigInt(ll v){*this=v;}
+  BigInt(const string &s){read(s);}
+  void operator=(const BigInt &v){ sign=v.sign; a=v.a;}
+  void operator=(ll v){
+    sign=1;
+    if(v<0) { sign=-1; v=-v;}
+    for(;v>0;v=v/base) a.push_back(v%base);
+  }
+  BigInt operator+(const BigInt &v) const{
+    if(sign==v.sign){
+      BigInt res=v;
+      for(ll i=0,carry=0;i<(ll)max(a.size(),v.a.size())||carry;++i){
+        if(i==(ll)res.a.size()) res.a.push_back(0);
+        res.a[i]+=carry+(i<(ll)a.size()?a[i]:0);
+        carry=res.a[i]>=base;
+        if(carry) res.a[i]-=base;
+      }
+      return res;
+    }
+    return *this -(-v);
+  }
+  BigInt operator-(const BigInt &v) const{
+    if(sign==v.sign){
+      if(abs()>=v.abs()){
+        BigInt res=*this;
+        for(ll i=0,carry=0;i<(ll)v.a.size()||carry;++i){
+          res.a[i]-=carry+(i<(ll)v.a.size()?v.a[i]:0);
+          carry=res.a[i]<0;
+          if(carry) res.a[i]+=base;
+        }
+        res.trim();
+        return res;
+      }
+      return -(v-*this);
+    }
+    return *this+(-v);
+  }
+  void operator*=(ll v){
+    if(v<0) { sign=-sign; v=-v;}
+    for(ll i=0,carry=0;i<(ll)a.size()|| carry;++i){
+      if(i ==(ll)a.size()) a.push_back(0);
+      ll cur=a[i] *(ll)v+carry;
+      carry=(ll)(cur/base);
+      a[i]=(ll)(cur%base);
+    }
+    trim();
+  }
+  BigInt operator*(ll v) const{ BigInt res=*this; res *=v; return res;}
+  friend pair<BigInt,BigInt> divmod(const BigInt &a1,const BigInt &b1){
+    ll norm=base/(b1.a.back()+1);
+    BigInt a=a1.abs()*norm;
+    BigInt b=b1.abs()*norm;
+    BigInt q,r;
+    q.a.resize(a.a.size());
+    for(ll i=a.a.size()-1;i>=0;i--){
+      r *=base;
+      r+=a.a[i];
+      ll s1=r.a.size()<=b.a.size() ? 0 : r.a[b.a.size()];
+      ll s2=r.a.size()<=b.a.size()-1 ? 0 : r.a[b.a.size()-1];
+      ll d=((ll)base*s1+s2)/b.a.back();
+      r-=b*d;
+      while(r<0) { r+=b; --d;}
+      q.a[i]=d;
+    }
+    q.sign=a1.sign*b1.sign;
+    r.sign=a1.sign;
+    q.trim();
+    r.trim();
+    return make_pair(q,r/norm);
+  }
+  BigInt operator/(const BigInt &v) const{ return divmod(*this,v).first;}
+  BigInt operator%(const BigInt &v) const{ return divmod(*this,v).second;}
+  void operator/=(ll v){
+    if(v<0) { sign=-sign; v=-v;}
+    for(ll i=(ll)a.size()-1,rem=0;i>=0;--i){
+      ll cur=a[i]+rem *(ll)base;
+      a[i]=(ll)(cur/v);
+      rem=(ll)(cur%v);
+    }
+    trim();
+  }
+  BigInt operator/(ll v) const{ BigInt res=*this; res/=v; return res;}
+  ll operator%(ll v) const{
+    if(v<0) v=-v;
+    ll m=0;
+    for(ll i=a.size()-1;i>=0;--i) m=(a[i]+m *(ll)base)%v;
+    return m*sign;
+  }
+  void operator+=(const BigInt &v){ *this=*this+v;}
+  void operator-=(const BigInt &v){ *this=*this-v;}
+  void operator*=(const BigInt &v){ *this=*this*v;}
+  void operator/=(const BigInt &v){ *this=*this/v;}
+  bool operator<(const BigInt &v) const{
+    if(sign!=v.sign) return sign<v.sign;
+    if(a.size()!=v.a.size()) return a.size()*sign<v.a.size()*v.sign;
+    for(ll i=a.size()-1;i>=0;i--)
+      if(a[i]!=v.a[i]) return a[i]*sign<v.a[i]*sign;
+    return false;
+  }
+  bool operator>(const BigInt &v) const{ return v<*this;}
+  bool operator<=(const BigInt &v) const{ return !(v<*this);}
+  bool operator>=(const BigInt &v) const{ return !(*this<v);}
+  bool operator==(const BigInt &v) const{ return !(*this<v)&&!(v<*this);}
+  bool operator!=(const BigInt &v) const{ return *this<v|| v<*this;}
+  void trim(){ while(!a.empty()&&!a.back()) a.pop_back(); if(a.empty()) sign=1;}
+  bool isZero() const{ return a.empty()||(a.size()==1&&!a[0]);}
+  BigInt operator-() const{ BigInt res=*this; res.sign=-sign; return res;}
+  BigInt abs() const{ BigInt res=*this; res.sign*=res.sign; return res;}
+  ll longValue() const{
+    ll res=0;
+    for(ll i=a.size()-1;i>=0;i--) res=res*base+a[i];
+    return res*sign;
+  }
+  friend BigInt gcd(const BigInt &a,const BigInt &b){ return b.isZero()?a:gcd(b,a%b);}
+  friend BigInt lcm(const BigInt &a,const BigInt &b){ return a/gcd(a,b)*b;}
+  void read(const string &s){
+    sign=1;
+    a.clear();
+    ll pos=0;
+    while(pos<(ll)s.size()&&(s[pos]=='-'|| s[pos]=='+')){
+      if(s[pos]=='-') sign=-sign;
+      ++pos;
+    }
+    for(ll i=s.size()-1;i>=pos;i-=base_digits){
+      ll x=0;
+      for(ll j=max(pos,i-base_digits+1);j<=i;j++) x=x*10+s[j]-'0';
+      a.push_back(x);
+    }
+    trim();
+  }
+  friend istream &operator>>(istream &stream,BigInt &v){
+    string s;
+    stream>>s;
+    v.read(s);
+    return stream;
+  }
+  friend ostream &operator<<(ostream &stream,const BigInt &v){
+    if(v.sign==-1) stream<<'-';
+    stream<<(v.a.empty()?0:v.a.back());
+    for(ll i=(ll)v.a.size()-2;i>=0;--i) stream<<setw(base_digits)<<setfill('0')<<v.a[i];
+    return stream;
+  }
+  static vll convert_base(const vll &a,ll old_digits,ll new_digits){
+    vll p(max(old_digits,new_digits)+1);
+    p[0]=1;
+    for(ll i=1;i<(ll)p.size();i++) p[i]=p[i-1]*10;
+    vll res;
+    ll cur=0;
+    ll cur_digits=0;
+    for(ll i=0;i<(ll)a.size();i++){
+      cur+=a[i]*p[cur_digits];
+      cur_digits+=old_digits;
+      while(cur_digits>=new_digits){
+        res.push_back(signed(cur%p[new_digits]));
+        cur/=p[new_digits];
+        cur_digits-=new_digits;
+      }
+    }
+    res.push_back((signed)cur);
+    while(!res.empty()&&!res.back()) res.pop_back();
+    return res;
+  }
+  static vll karatsubaMultiply(const vll &a,const vll &b){
+    ll n=a.size();
+    vll res(n+n);
+    if(n<=32){
+      for(ll i=0;i<n;i++)
+        for(ll j=0;j<n;j++)
+          res[i+j]+=a[i]*b[j];
+      return res;
+    }
+    ll k=n>>1;
+    vll a1(a.begin(),a.begin()+k);
+    vll a2(a.begin()+k,a.end());
+    vll b1(b.begin(),b.begin()+k);
+    vll b2(b.begin()+k,b.end());
+    vll a1b1=karatsubaMultiply(a1,b1);
+    vll a2b2=karatsubaMultiply(a2,b2);
+    for(ll i=0;i<k;i++) a2[i]+=a1[i];
+    for(ll i=0;i<k;i++) b2[i]+=b1[i];
+    vll r=karatsubaMultiply(a2,b2);
+    for(ll i=0;i<(ll)a1b1.size();i++) r[i]-=a1b1[i];
+    for(ll i=0;i<(ll)a2b2.size();i++) r[i]-=a2b2[i];
+    for(ll i=0;i<(ll)r.size();i++) res[i+k]+=r[i];
+    for(ll i=0;i<(ll)a1b1.size();i++) res[i]+=a1b1[i];
+    for(ll i=0;i<(ll)a2b2.size();i++) res[i+n]+=a2b2[i];
+    return res;
+  }
+  BigInt operator*(const BigInt &v) const{
+    constexpr static ll nbase = 10000;
+    constexpr static ll nbase_digits = 4;
+    vll a=convert_base(this->a,base_digits,nbase_digits);
+    vll b=convert_base(v.a,base_digits,nbase_digits);
+    if(a.empty()) a.push_back(0);
+    if(b.empty()) b.push_back(0);
+    vll c=FFT::multiply(a,b);
+    BigInt res;
+    res.sign=sign*v.sign;
+    for(ll i=0,carry=0;i<(ll)c.size();i++){
+      ll cur=c[i]+carry;
+      res.a.push_back((ll)(cur%nbase));
+      carry=(ll)(cur/nbase);
+      if(i+1==(int)c.size()&&carry>0) c.push_back(0);
+    }
+    res.a=convert_base(res.a,nbase_digits,base_digits);
+    res.trim();
+    return res;
+  }
+};
+
+
 //Binary Search
 #define bis(_ac,_wa,_f) [&]{ll ac=_ac,wa=_wa;while(abs(ac-wa)>1){ll wj=(ac+wa)>>1;(_f(wj)?ac:wa)=wj;}return ac;}()
 
@@ -470,6 +691,84 @@ ll extGCD(ll a, ll b, ll &x, ll &y){
   y -= a/b*x;
   return d;
 }
+
+
+//FFT
+namespace FFT{
+  struct num{
+    double x,y;
+    num(){x=y=0;}
+    num(double x,double y):x(x),y(y){}
+  };
+  inline num operator+(num a,num b){ return num(a.x+b.x,a.y+b.y);}
+  inline num operator-(num a,num b){ return num(a.x-b.x,a.y-b.y);}
+  inline num operator*(num a,num b){ return num(a.x*b.x-a.y*b.y,a.x*b.y+a.y*b.x);}
+  inline num conj(num a){ return num(a.x,-a.y);}
+  int base=1;
+  vector<num> rts={{0,0},{1,0}};
+  vector<int> rev={0,1};
+  const double PI=acosl(-1.0);
+  void ensure_base(int nbase){
+    if(nbase<=base) return;
+    rev.resize(1<<nbase);
+    for(int i=0;i<(1<<nbase);i++) rev[i]=(rev[i>>1]>>1)+((i&1)<<(nbase-1));
+    rts.resize(1<<nbase);
+    while(base<nbase){
+      double angle=2*PI/(1<<(base+1));
+      for(int i=1<<(base-1);i<(1<<base);i++){
+        rts[i<<1]=rts[i];
+        double angle_i=angle*(2*i+1-(1<<base));
+        rts[(i<<1)+1]=num(cos(angle_i),sin(angle_i));
+      }
+      base++;
+    }
+  }
+  void fft(vector<num> &a,int n=-1){
+    if(n == -1) n = (int)a.size();
+    assert((n&(n-1))==0);
+    int zeros=__builtin_ctz(n);
+    ensure_base(zeros);
+    int shift=base-zeros;
+    for(int i=0;i<n;i++) if(i<(rev[i]>>shift)) swap(a[i],a[rev[i]>>shift]);
+    for(int k=1;k<n;k<<=1){
+      for(int i=0;i<n;i+=2*k){
+        for(int j=0;j<k;j++){
+          num z=a[i+j+k]*rts[j+k];
+          a[i+j+k]=a[i+j]-z;
+          a[i+j]=a[i+j]+z;
+        }
+      }
+    }
+  }
+  vector<num> fa;
+  template<typename T>
+  vector<long long> multiply(const vector<T> &a,const vector<T> &b){
+    int need=(int)a.size()+b.size()-1;
+    int nbase=0;
+    while((1<<nbase)<need) nbase++;
+    ensure_base(nbase);
+    int sz=1<<nbase;
+    if(sz>(int)fa.size()) fa.resize(sz);
+    for(int i=0;i<sz;i++){
+      int x=(i<(int)a.size()?a[i]:0);
+      int y=(i<(int)b.size()?b[i]:0);
+      fa[i]=num(x,y);
+    }
+    fft(fa,sz);
+    num r(0,-0.25/sz);
+    for(int i=0;i<=(sz>>1);i++){
+      int j=(sz-i)&(sz-1);
+      num z=(fa[j]*fa[j]-conj(fa[i]*fa[i]))*r;
+      if(i!=j)
+        fa[j]=(fa[i]*fa[i]-conj(fa[j]*fa[j]))*r;
+      fa[i]=z;
+    }
+    fft(fa,sz);
+    vector<long long> res(need);
+    for(int i=0;i<need;i++) res[i]=fa[i].x+0.5;
+    return res;
+  }
+};
 
 
 //FLOOR_SUM ∑[i=0, n−1](floor(a×i+b)/m)
