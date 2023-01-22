@@ -138,7 +138,7 @@ vector<T> bellman(const vector<vector<edge<T>>> &g, int s){
 }
 
 
-//BIGINT
+//BIGINT (using FFT)
 struct BigInt {
   using ll = long long;
   using vll = vector<ll>;
