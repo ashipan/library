@@ -616,7 +616,7 @@ using graph = vector<vector<edge<T>>>;
 
 
 //Eratosthenes
-//template<typename T>
+template<typename T>
 struct Eratosthenes{
   vector<bool> isprime;
   vector<T> sieves;
