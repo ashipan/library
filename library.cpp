@@ -1612,6 +1612,7 @@ T Levenshtein_distance(string s, string t, T INSERT_COST=1, T DELETE_COST=1, T C
 
 
 //LIS
+// dp[i] := minimum element at length i
 template<typename T>
 vector<long long> LIS(vector<T>& a){
   const long long LINF = 1001002003004005006ll;
