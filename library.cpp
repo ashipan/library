@@ -1613,12 +1613,14 @@ T Levenshtein_distance(string s, string t, T INSERT_COST=1, T DELETE_COST=1, T C
 
 //LIS
 template<typename T>
-vector<T> LIS(vector<T>& a){
+vector<long long> LIS(vector<T>& a){
+  const long long LINF = 1001002003004005006ll;
   int n = (int)a.size();
-  vector<T> dp(n+1, numeric_limits<T>::max());
-  for(int i = 0; i < n; i++) *lower_bound(dp.begin(), dp.end(), a[i]) = a[i];
+  vector<long long> dp(n+1, LINF);
+  for (int i = 0; i < n; i++) *lower_bound(dp.begin(), dp.end(), a[i]) = a[i];
   return dp;
 }
+
 
 //Perm
 struct Perm : vector<int> {
@@ -2171,12 +2173,8 @@ struct V {
     return cross(v) > 0;
   }
 };
-istream& operator>>(istream& is, V& v) {
-  is >> v.x >> v.y; return is;
-}
-ostream& operator<<(ostream& os, const V& v) {
-  os<<"("<<v.x<<","<<v.y<<")"; return os;
-}
+istream& operator>>(istream& is, V& v) { is >> v.x >> v.y; return is;}
+ostream& operator<<(ostream& os, const V& v) { os<<"("<<v.x<<","<<v.y<<")"; return os;}
 
 
 
