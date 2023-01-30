@@ -2120,6 +2120,66 @@ vector<T> treeHeight(vector<vector<edge<T>>> &g){
 }
 
 
+//Trie
+template<size_t X>
+struct Trie {
+  struct Node {
+    array<int, X> nxt;
+    int idx, cnt;
+    Node(): idx(-1), cnt(0) { fill(nxt.begin(), nxt.end(), -1);}
+  };
+  using F = function<int(char)>;
+  vector<Node> vs;
+  F conv;
+  Trie(F conv): conv(conv) { vs.emplace_back();}
+  Trie(char start): Trie([=](char a) { return a-start;}){}
+  inline int &next(int i, int j) { return vs[i].nxt[j];}
+  void add(const string &s) {
+    int pos = 0;
+    for (char c : s) {
+      int k = conv(c);
+      if (~next(pos, k)) { pos=next(pos,k); continue;}
+      int npos = (int)vs.size();
+      next(pos, k) = npos;
+      vs.emplace_back();
+      pos = npos;
+    }
+    pos = 0;
+    for (char c : s) {
+      int k = conv(c);
+      pos = next(pos, k);
+      vs[pos].cnt++;
+    }
+  }
+  int calc(const string &s) {
+    int pos = 0, dep = 0, res = 0;
+    for (char c : s) {
+      int k = conv(c);
+      pos = next(pos, k);
+      dep++;
+      if (vs[pos].cnt >= 2) res = max(res, dep);
+    }
+    return res;
+  }
+  int find(const string &s) {
+    int pos = 0;
+    for (char c : s) {
+      int k = conv(c);
+      if (next(pos, k) < 0) return -1;
+      pos = next(pos, k);
+    }
+    return pos;
+  }
+  int move(int pos, char c) {
+    assert(pos < (int)vs.size());
+    return pos < 0 ? -1 : next(pos, conv(c));
+  }
+  int size() { return (int)vs.size();}
+  int idx(int pos) { return pos < 0 ? -1 : vs[pos].idx;}
+  vector<int> idxs(int pos) { return pos < 0 ? vector<int>() : vs[pos].idxs;}
+};
+
+
 //UNIONFIND
 template<typename T>
 struct UnionFind {
