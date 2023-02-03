@@ -2374,9 +2374,9 @@ struct WaveletMatrix{
     for(int dep = 0; dep < MAXLOG; dep++){
       int p = mat[dep].rank(1, l);
       int q = mat[dep].rank(1, r);
-      if(p - q > k){
+      if(q - p > k){
         l = p + zs[dep];
-        r = p + zs[dep];
+        r = q + zs[dep];
         res |= T(1)<<(MAXLOG-(dep+1));
       }
       else{
