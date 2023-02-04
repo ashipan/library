@@ -1292,121 +1292,25 @@ string long_to_baseN(ll n, int N){
   return res;
 }
 
+//Lazy_segtree
 
-//Lazy Segment Tree(range_max)
-template<typename T>
-struct SEG{
-  int n;
-  vector<T> seg, lazy;
-  SEG(){}
-  SEG(int n_) { init(n_);}
-  void init(int n_){
-    n = 1;
-    while(n < n_) n *= 2;
-    seg = lazy = vector<T> (n*2, -INT_MAX);
-  }
-  void push(int k){
-    if(k < n){
-      lazy[k*2] = max(lazy[k*2], lazy[k]);
-      lazy[k*2+1] = max(lazy[k*2+1], lazy[k]);
-    }
-    seg[k] = max(seg[k], lazy[k]);
-    lazy[k] = 0;
-  }
-  void update(int a, int b, T x, int k, int l, int r){
-    push(k);
-    if(r <= a || b <= l) return;
-    if(a <= l && r <= b){
-      lazy[k] = x;
-      push(k);
-      return;
-    }
-    update(a, b, x, k*2, l, (l + r)/2);
-    update(a, b, x, k*2 + 1, (l + r)/2, r);
-    seg[k] = max(seg[k*2], seg[k*2+1]);
-  }
-  void update(int l, int r, T x){ update(l, r, x, 1, 0, n);}
-  int range_max(int a, int b, T k, int l, int r){
-    push(k);
-    if(r <= a || b <= l) return 0;
-    if(a <= l && r <= b) return seg[k];
-    int vl = range_max(a, b, k*2, l, (l + r)/2);
-    int vr = range_max(a, b, k*2 + 1, (l + r)/2, r);
-    return max(vl, vr);
-  }
-  int range_max(int l, int r){ return range_max(l, r, 1, 0, n);}
-};
+// RMQ, RAQ
+using S = ll;
+using F = ll;
+S op(S a, S b){ return max(a, b);}
+S e(){ return -INF;}
+S mapping(F f, S x){ return f+x;}
+F composition(F f, F g){ return f+g;}
+F id(){ return 0;}
 
-
-//Lazy Segment Tree(range_min)
-template<typename T>
-struct SEG{
-  int n;
-  vector<T> seg, lazy;
-  SEG(){}
-  SEG(int n_) { init(n_);}
-  void init(int n_){
-    n = 1;
-    while(n < n_) n *= 2;
-    seg = lazy = vector<T> (n*2, INT_MAX);
-  }
-  void push(int k){
-    if(k < n){
-      lazy[k*2] = min(lazy[k*2], lazy[k]);
-      lazy[k*2+1] = min(lazy[k*2+1], lazy[k]);
-    }
-    seg[k] = min(seg[k], lazy[k]);
-    lazy[k] = INT_MAX;
-  }
-  void update(int a, int b, T x, int k, int l, int r){
-    push(k);
-    if(r <= a || b <= l) return;
-    if(a <= l && r <= b){
-      lazy[k] = x;
-      push(k);
-      return;
-    }
-    update(a, b, x, k*2, l, (l + r)/2);
-    update(a, b, x, k*2 + 1, (l + r)/2, r);
-    seg[k] = min(seg[k*2], seg[k*2+1]);
-  }
-  void update(int l, int r, T x){ update(l, r, x, 1, 0, n);}
-  int range_min(int a, int b, T k, int l, int r){
-    push(k);
-    if(r <= a || b <= l) return 0;
-    if(a <= l && r <= b) return seg[k];
-    int vl = range_min(a, b, k*2, l, (l + r)/2);
-    int vr = range_min(a, b, k*2 + 1, (l + r)/2, r);
-    return min(vl, vr);
-  }
-  int range_min(int l, int r){ return range_min(l, r, 1, 0, n);}
-};
-
-
-// Lazy_segtree
-
-/* RMQ, RAQ
- using S = ll;
- using F = ll;
- S op(S a, S b){ return max(a, b);}
- S e(){ return -INF;}
- S mapping(F f, S x){ return f+x;}
- F composition(F f, F g){ return f+g;}
- F id(){ return 0;}
- */
-
-/* RSQ, RAQ
- struct S{
- ll val;
- int size;
- };
- using F = ll;
- S op(S a, S b){ return {a.val + b.val, a.size + b.size};}
- S e(){ return {0, 1};}
- S mapping(F f, S x){ return {x.val + f*x.size, x.size};}
- F composition(F f, F g){ return f + g;}
- F id() { return 0;}
- */
+// RSQ, RAQ
+struct S{ ll val; int size;};
+using F = ll;
+S op(S a, S b){ return {a.val + b.val, a.size + b.size};}
+S e(){ return {0, 1};}
+S mapping(F f, S x){ return {x.val + f*x.size, x.size};}
+F composition(F f, F g){ return f + g;}
+F id() { return 0;}
 
 template<class S, S (*op)(S, S), S (*e)(), class F, S (*mapping)(F, S), F (*composition)(F, F), F (*id)()>
 struct LSEG{
@@ -1550,8 +1454,6 @@ struct LSEG{
     return 0;
   }
 };
-
-
 
 
 //LCA
