@@ -570,14 +570,15 @@ pair<pair<int, int>, T> diameter(vector<vector<edge<T>>> &g) {
 
 //DIJKSTRA
 template<typename T>
-vector<T> dijkstra(const vector<vector<edge<T>>> &g, int s){
+vector<long long> dijkstra(const vector<vector<edge<T>>> &g, int s){
+  const long long LINF = 1001002003004005006ll;
   int n = (int)g.size();
-  vector<T> dist(n, numeric_limits<T>::max());
-  priority_queue<pair<T, int>, vector<pair<T, int>>, greater<pair<T, int>>> q;
+  vector<long long> dist(n, LINF);
+  priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> q;
   q.emplace(0, s);
   while(!q.empty()){
     int v = q.top().second;
-    int d = q.top().first; q.pop();
+    long long d = q.top().first; q.pop();
     if(dist[v] <= d) continue;
     dist[v] = d;
     for(edge e : g[v]) q.emplace(e.cost+d, e.to);
