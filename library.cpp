@@ -1629,7 +1629,7 @@ T prim(vector<vector<edge<T>>> &g){
 //PRIME_FACTOR
 vector<pair<ll, ll>> prime_factor(ll n){
   vector<pair<ll, ll>> pf;
-  //if(n == 1) pf.push_back(P(1, 1));
+  // if(n == 1) pf.push_back(P(1, 1));
   for(ll i = 2; i*i <= n; i++){
     if(n%i == 0){
       int cnt = 0;
