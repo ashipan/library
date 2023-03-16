@@ -1275,6 +1275,48 @@ ostream& operator<<(ostream& o, const mint& a) { return o<<a.x;}
 inline ll mod(ll a, ll m) { return (a%m+m)%m;}
 
 
+//Mo (ABC293-G)
+struct D {
+  int n; vector<int>& a;
+  vector<int> cnt; ll d;
+  D(vector<int>& a): n((int)a.size()), a(a), cnt(200005), d(0) {}
+  void push_back(int i) { add(i);}
+  void push_front(int i) { add(i);}
+  void pop_back(int i) { del(i);}
+  void pop_front(int i) { del(i);}
+  void add(int i, int x=1) {
+    auto c3 = [&](ll n) { return n*(n-1)*(n-2)/6;};
+    d -= c3(cnt[a[i]]);
+    cnt[a[i]] += x;
+    d += c3(cnt[a[i]]);
+  }
+  void del(int i) { add(i,-1);}
+  ll get() { return d;}
+};
+
+template<typename T=long long>
+vector<T> Mo(vector<pair<int, int>> lr, D& d) {
+  int q = (int)lr.size(); vector<T> res(q);
+  int W = d.n/(sqrt(q)+1)+1;
+  vector<int> is(q); iota(is.begin(), is.end(), 0);
+  vector<int> li(q); for (int i = 0; i < q; i++) li[i] = lr[i].first/W;
+  sort(is.begin(), is.end(), [&](int i, int j) {
+    if (li[i] != li[j]) return li[i] < li[j];
+    return (li[i]&1) ? (lr[i].second > lr[j].second) : lr[i].second < lr[j].second;
+  });
+  int l = 0, r = 0;
+  for (int i : is) {
+    auto [nl, nr] = lr[i];
+    while (r < nr) d.push_back(r++);
+    while (l > nl) d.push_front(--l);
+    while (l < nl) d.pop_front(l++);
+    while (r > nr) d.pop_back(--r);
+    res[i] = d.get();
+  }
+  return res;
+}
+
+
 //Notation systemp of base N
 ll baseN_to_long(string s, int N){
   ll res = 0;
