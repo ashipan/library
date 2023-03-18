@@ -1245,26 +1245,49 @@ template<typename T>
 struct Matrix {
   int h, w;
   vector<vector<T>> d;
-  Matrix() {}
   Matrix(int h, int w, T val=0): h(h), w(w), d(h, vector<T>(w, val)) {}
+  const vector<T>& operator[](int i) const { return d[i];}
+  vector<T>& operator[](int i) { return d[i];}
+  Matrix& operator+=(const Matrix& a) {
+    assert(h == a.h && w == a.w);
+    for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] += a[i][j];
+    return *this;
+  }
+  Matrix& operator-=(const Matrix& a) {
+    assert(h == a.h && w == a.w);
+    for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] -= a[i][j];
+    return *this;
+  }
+  Matrix& operator*=(const Matrix& a) {
+    assert(w == a.h);
+    Matrix r(h, a.w);
+    for(int k=0;k<w;k++)for(int i=0;i<h;i++)for(int j=0;j<a.w;j++) r[i][j] += d[i][k]*a[k][j];
+    w = a.w; for(int i=0;i<h;i++) d[i].resize(w);
+    for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] = r[i][j];
+    return *this;
+  }
+  Matrix operator+(const Matrix& a) const { return Matrix(*this) += a;}
+  Matrix operator-(const Matrix& a) const { return Matrix(*this) -= a;}
+  Matrix operator*(const Matrix& a) const { return Matrix(*this) *= a;}
+  bool operator==(const Matrix& a) {
+    assert(h == a.h && w == a.w);
+    for(int i=0;i<h;i++)for(int j=0;j<w;j++) if (d[i][j] != a[i][j]) return false;
+    return true;
+  }
+  Matrix& operator+=(const T& a) { for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] += a; return *this;}
+  Matrix& operator-=(const T& a) { for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] -= a; return *this;}
+  Matrix& operator*=(const T& a) { for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] *= a; return *this;}
+  Matrix& operator/=(const T& a) { for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] /= a; return *this;}
+  Matrix& operator%=(const T& a) { for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] %= a; return *this;}
+  Matrix operator+(const T& a) const { return Matrix(*this) += a;}
+  Matrix operator-(const T& a) const { return Matrix(*this) -= a;}
+  Matrix operator*(const T& a) const { return Matrix(*this) *= a;}
+  Matrix operator/(const T& a) const { return Matrix(*this) /= a;}
+  Matrix operator%(const T& a) const { return Matrix(*this) %= a;}
   Matrix& unit() {
     assert(h == w);
     for (int i = 0; i < h; i++) d[i][i] = 1;
     return *this;
-  }
-  const vector<T>& operator[](int i) const { return d[i];}
-  vector<T>& operator[](int i) { return d[i];}
-  Matrix operator*(const Matrix& a) const {
-    assert(w == a.h);
-    Matrix r(h, a.w);
-    for (int k = 0; k < w; k++) {
-      for (int i = 0; i < h; i++) {
-        for (int j = 0; j < a.w; j++) {
-          r[i][j] += d[i][k]*a[k][j];
-        }
-      }
-    }
-    return r;
   }
   Matrix pow(long long t) const {
     assert(h == w);
@@ -1274,6 +1297,18 @@ struct Matrix {
     r = r*r;
     if (t&1) r = r*(*this);
     return r;
+  }
+  Matrix& rot(int deg) {
+    assert(1 <= deg && deg <= 3);
+    Matrix r(h, w);
+    if (deg&1) {
+      if (deg == 1) for(int i=0;i<h;i++)for(int j=0;j<w;j++) r[j][h-i-1] = d[i][j];
+      if (deg == 3) for(int i=0;i<h;i++)for(int j=0;j<w;j++) r[w-j-1][i] = d[i][j];
+      swap(h, w); d.resize(h); for(int i=0;i<h;i++) d[i].resize(w);
+    }
+    else for(int i=0;i<h;i++)for(int j=0;j<w;j++) r[h-i-1][w-j-1] = d[i][j];
+    for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i][j] = r[i][j];
+    return *this;
   }
   /* mint only
   mint det() {
@@ -1299,6 +1334,7 @@ struct Matrix {
     return res;
   }
    */
+  void show() { for(int i=0;i<h;i++)for(int j=0;j<w;j++)cout<<d[i][j]<<" \n"[j+1 == w];}
 };
 
 
