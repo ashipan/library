@@ -921,6 +921,94 @@ struct graphLink{
 };
 
 
+//HL-decomposition (using SegmentTree, edge)
+using HL_S = long long;
+HL_S hl_op(HL_S a, HL_S b){ return a + b;}
+HL_S hl_e(){ return 0;}
+template<typename T=long long>
+struct HL {
+  int n, root;
+  vector<vector<int>> to;
+  SEG<HL_S, hl_op, hl_e> t;
+  HL(int n=0): n(n), to(n) {}
+  HL(const vector<vector<edge<T>>>& s): n((int)s.size()), to(n) {
+    for(int i = 0; i < n; i++) for(auto j : s[i]) to[i].push_back(j.to);
+    init();
+  }
+  void addEdge(int a, int b) {
+    to[a].push_back(b);
+    to[b].push_back(a);
+  }
+  vector<int> tsz, pa, dep;
+  int tfs(int v, int p=-1) {
+    pa[v] = p; tsz[v] = 1;
+    for (int i = 0; i < (int)to[v].size(); i++) {
+      int& u = to[v][i];
+      if (u == p) swap(u, to[v].back());
+      if (u == p) break;
+      dep[u] = dep[v] + 1;
+      tsz[v] += tfs(u, v);
+      if (tsz[u] > tsz[to[v][0]]) swap(u, to[v][0]);
+    }
+    if (~p) to[v].pop_back();
+    return tsz[v];
+  }
+  vector<int> in, out, nxt, kv;
+  void dfs(int v) {
+    in[v] = (int)size(kv); kv.push_back(v);
+    for (int i = 0; i < (int)to[v].size(); i++) {
+      int u = to[v][i];
+      nxt[u] = i ? u : nxt[v];
+      dfs(u);
+    }
+    out[v] = (int)size(kv);
+  }
+  void init(int v=0) {
+    tsz = pa = dep = vector<int>(n);
+    tfs(root = v);
+    in = out = nxt = vector<int>(n);
+    nxt[root] = root;
+    dfs(root);
+    t = SEG<HL_S, hl_op, hl_e>(n);
+  }
+  int up(int v, int l) {
+    while (~v) {
+      int u = nxt[v], nl = dep[v] - dep[u] + 1;
+      if (l < nl) return kv[in[v]-l];
+      l -= nl; v = pa[u];
+    }
+    return -1;
+  }
+  int lca(int a, int b) {
+    while (nxt[a] != nxt[b]) {
+      if (in[a] < in[b]) swap(a, b);
+      a = pa[nxt[a]];
+    }
+    if (in[a] < in[b]) swap(a, b);
+    return b;
+  }
+  int len(int a, int b) { return dep[a]+dep[b]-dep[lca(a, b)]*2;}
+  void initSeg(vector<HL_S>& a) { t = SEG<HL_S, hl_op, hl_e>(a);}
+  void add(int v, HL_S x) { t.set(in[v], x);}
+  HL_S sum(int p, int v) {
+    HL_S res = 0;
+    int ip = ~p ? in[p] : -1;
+    while (~v) {
+      int u = nxt[v];
+      if (in[u] <= ip) {
+        res += t.prod(ip+1, in[v]+1);
+        break;
+      }
+      res += t.prod(in[u], in[v]+1);
+      v = pa[u];
+    }
+    return res;
+  }
+  HL_S sums(int a, int b) { int c = lca(a, b); return sum(c, a)+sum(c, b);}
+  HL_S sumr(int v) { return t.prod(in[v], out[v]);}
+};
+
+
 //ImplicitTreap
 // モノイドの型
 using S = int;
