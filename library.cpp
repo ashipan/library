@@ -1334,6 +1334,7 @@ struct Matrix {
   int h, w;
   vector<vector<T>> d;
   Matrix(int h, int w, T val=0): h(h), w(w), d(h, vector<T>(w, val)) {}
+  Matrix(vector<vector<T>> a): h((int)a.size()), w((int)a[0].size()), d(a) {}
   const vector<T>& operator[](int i) const { return d[i];}
   vector<T>& operator[](int i) { return d[i];}
   Matrix& operator+=(const Matrix& a) {
