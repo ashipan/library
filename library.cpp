@@ -812,64 +812,6 @@ ll gcd(ll a, ll b) { return b ? gcd(b, a%b) : a;}
 ll lcm(ll a, ll b) { return a/gcd(a, b)*b;}
 
 
-//GraphSCC
-template<typename T=int>
-struct GraphSCC{
-public:
-  const int n;
-  vector<bool> used;
-  vector<int> vs, cmp;
-  vector<vector<int>> g, rg, h;
-  GraphSCC(vector<vector<edge<T>>> &s): n((int)s.size()), used(n), cmp(n), g(n), rg(n) {
-    for(int i = 0; i < n; i++) for(int j = 0; j < s[i].size(); j++){
-      g[i].emplace_back(s[i][j].to);
-      rg[s[i][j].to].emplace_back(i);
-    }
-  }
-  void SCC_dfs_one(int cur){
-    used[cur] = true;
-    for(int i : g[cur]) if(!used[i]) SCC_dfs_one(i);
-    vs.emplace_back(cur);
-  }
-  void SCC_dfs_two(vector<int> &vec, int cur, int k){
-    cmp[cur] = k;
-    used[cur] = true;
-    vec.push_back(cur);
-    for(int i = 0; i < rg[cur].size(); i++){
-      if(!used[rg[cur][i]]) SCC_dfs_two(vec, rg[cur][i], k);
-    }
-  }
-  pair<vector<int>, int> scc(){
-    for(int i = 0; i < n; i++) if(!used[i]) SCC_dfs_one(i);
-    fill(used.begin(), used.end(), false);
-    reverse(vs.begin(), vs.end());
-    int k = 0;
-    vector<vector<int>> s;
-    for(int i = 0; i < vs.size(); i++){
-      if(!used[vs[i]]){
-        s.push_back(vector<int>());
-        SCC_dfs_two(s.back(), vs[i], k++);
-      }
-    }
-    h.resize(k);
-    fill(used.begin(), used.end(), false);
-    for(int i = 0; i < k; i++){
-      for(int j = 0; j < s[i].size(); j++){
-        int v = s[i][j];
-        for(int x = 0; x < g[v].size(); x++){
-          int u = g[v][x];
-          if(used[cmp[u]] || cmp[v] == cmp[u]) continue;
-          used[cmp[u]] = true;
-          h[cmp[v]].push_back(cmp[u]);
-        }
-      }
-      for(int j = 0; j < h[i].size(); j++) used[h[i][j]] = false;
-    }
-    return make_pair(cmp, k);
-  }
-};
-
-
 //GraphLink
 template<typename T>
 struct graphLink{
@@ -2132,6 +2074,78 @@ struct RollingHash {
       else low = mid;
     }
     return low;
+  }
+};
+
+
+//SCC_GRAPH
+template<typename T=int>
+struct scc_graph {
+  int n;
+  vector<pair<int, int>> edges;
+  struct csr {
+    vector<int> start, elist;
+    csr(int n, const vector<pair<int, int>>& edges): start(n+1), elist(edges.size()) {
+      for (auto e : edges) start[e.first + 1]++;
+      for (int i = 1; i <= n; i++) start[i] += start[i - 1];
+      auto counter = start;
+      for (auto e : edges) elist[counter[e.first]++] = e.second;
+    }
+  };
+  scc_graph(int _n): n(_n){}
+  scc_graph(vector<vector<edge<T>>> &s): n((int)s.size()) {
+    for (int i = 0; i < n; i++) for (int j = 0; j < s[i].size(); j++) {
+      add_edge(i, s[i][j].to);
+    }
+  }
+  
+  int num_vertices() { return n; }
+  
+  void add_edge(int from, int to) { edges.push_back({from, to}); }
+  
+  // @return pair of (# of scc, scc id)
+  pair<int, vector<int>> scc_ids() {
+    auto g = csr(n, edges);
+    int now_ord = 0, group_num = 0;
+    vector<int> visited, low(n), ord(n, -1), ids(n);
+    visited.reserve(n);
+    auto dfs = [&](auto self, int v) -> void {
+      low[v] = ord[v] = now_ord++;
+      visited.push_back(v);
+      for (int i = g.start[v]; i < g.start[v + 1]; i++) {
+        auto to = g.elist[i];
+        if (ord[to] == -1) {
+          self(self, to);
+          low[v] = min(low[v], low[to]);
+        } else {
+          low[v] = min(low[v], ord[to]);
+        }
+      }
+      if (low[v] == ord[v]) {
+        while (true) {
+          int u = visited.back();
+          visited.pop_back();
+          ord[u] = n;
+          ids[u] = group_num;
+          if (u == v) break;
+        }
+        group_num++;
+      }
+    };
+    for (int i = 0; i < n; i++) if (ord[i] == -1) dfs(dfs, i);
+    for (auto& x : ids) x = group_num - 1 - x;
+    return {group_num, ids};
+  }
+  
+  vector<vector<int>> scc() {
+    auto ids = scc_ids();
+    int group_num = ids.first;
+    vector<int> counts(group_num);
+    for (auto x : ids.second) counts[x]++;
+    vector<vector<int>> groups(ids.first);
+    for (int i = 0; i < group_num; i++) groups[i].reserve(counts[i]);
+    for (int i = 0; i < n; i++) groups[ids.second[i]].push_back(i);
+    return groups;
   }
 };
 
