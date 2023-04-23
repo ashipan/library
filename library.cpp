@@ -1369,6 +1369,39 @@ struct Matrix {
 };
 
 
+//MEX
+template<typename T=int>
+struct MEX {
+  set<pair<int, int>> st;
+  MEX() { init(); }
+  MEX(vector<T>& a) { init(); for (T i : a) insert(i);}
+  void init() { st.emplace(INT_MIN, INT_MIN); st.emplace(INT_MAX, INT_MAX); }
+  bool contains(int x) const {
+    auto [l, r] = *prev(st.lower_bound(make_pair(x+1, x+1)));
+    return l <= x && x <= r;
+  }
+  bool insert(int x) {
+    auto nit = st.lower_bound(make_pair(x+1, x+1));
+    auto it = prev(nit);
+    auto [l, r] = *it;
+    auto [nl, nr] = *nit;
+    if (l <= x && x <= r) return false;
+    if (r == x-1) {
+      if (nl == x+1) { st.erase(it); st.erase(nit); st.emplace(l, nr); }
+      else { st.erase(it); st.emplace(l, x); }
+    } else {
+      if (nl == x+1) { st.erase(nit); st.emplace(x, nr); }
+      else { st.emplace(x, x); }
+    }
+    return true;
+  }
+  int mex(int x=0) const {
+    auto [l, r] = *prev(st.lower_bound(make_pair(x+1, x+1)));
+    return (l <= x && x <= r) ? r+1 : x;
+  }
+};
+
+
 //MINT
 struct mint {
   unsigned x;
