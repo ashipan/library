@@ -14,8 +14,6 @@ const int INF = 1001001001;
 const ll LINF = 1001002003004005006ll;
 const int mod = 1000000007;
 const int mod = 998244353;
-const int di[] = {-1, 0, 1, 0, -1, -1, 1, 1};
-const int dj[] = {0, -1, 0, 1, -1, 1, -1, 1};
 
 //Aho-Corasick
 struct Aho {
@@ -586,6 +584,11 @@ vector<long long> dijkstra(const vector<vector<edge<T>>> &g, int s){
   }
   return dist;
 }
+
+
+//Dirction
+const int di[] = {-1, 0, 1, 0, -1, -1, 1, 1};
+const int dj[] = {0, -1, 0, 1, -1, 1, -1, 1};
 
 
 //DIVISOR
@@ -1479,6 +1482,7 @@ vector<T> Mo(vector<pair<int, int>> lr, D& d) {
 }
 
 
+//NNT
 template<int mod=1012924417>
 struct NTT {
   vector<int> rev, rts;
