@@ -1430,6 +1430,7 @@ struct mint {
   bool operator<(const mint& a) const { return x < a.x;}
   bool operator==(const mint& a) const { return x == a.x;}
   bool operator!=(const mint& a) const { return x != a.x;}
+  mint inv() const { return pow(mod-2);}
 };
 mint ex(mint x, ll t) { return x.pow(t);}
 istream& operator>>(istream& i, mint& a) { unsigned long long t; i>>t; a=mint(t); return i;}
@@ -1482,7 +1483,7 @@ vector<T> Mo(vector<pair<int, int>> lr, D& d) {
 }
 
 
-//NNT
+//NTT
 template<int mod=1012924417>
 struct NTT {
   vector<int> rev, rts;
