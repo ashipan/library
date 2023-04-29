@@ -796,6 +796,50 @@ T floor_sum(T n, T m, T a, T b){
 }
 
 
+//FPS (Formal Power Series)
+struct fps : vector<mint> {
+#define d (*this)
+#define s int(vector<mint>::size())
+  template<class...Args> fps(Args...args): vector<mint>(args...) {}
+  fps(initializer_list<mint> a): vector<mint>(a.begin(),a.end()) {}
+  void rsz(int n) { if (s < n) resize(n);}
+  fps& low_(int n) { resize(n); return d;}
+  fps low(int n) const { return fps(d).low_(n);}
+  mint& operator[](int i) { rsz(i+1); return vector<mint>::operator[](i);}
+  mint operator[](int i) const { return i<s ? vector<mint>::operator[](i) : 0;}
+  mint operator()(mint x) const {
+    mint r;
+    for (int i = s-1; i >= 0; --i) r = r*x+d[i];
+    return r;
+  }
+  fps operator-() const { fps r(d); rep(i, 0, s) r[i] = -r[i]; return r;}
+  fps& operator+=(const fps& a) { rsz((int)a.size()); rep(i,0,a.size()) d[i] += a[i]; return d;}
+  fps& operator-=(const fps& a) { rsz((int)a.size()); rep(i,0,a.size()) d[i] -= a[i]; return d;}
+  fps& operator*=(const fps& a) { return d = ntt(d, a);}
+  fps& operator*=(mint a) { rep(i, 0, s) d[i] *= a; return d;}
+  fps& operator/=(mint a) { rep(i, 0, s) d[i] /= a; return d;}
+  fps operator+(const fps& a) const { return fps(d) += a;}
+  fps operator-(const fps& a) const { return fps(d) -= a;}
+  fps operator*(const fps& a) const { return fps(d) *= a;}
+  fps operator*(mint a) const { return fps(d) *= a;}
+  fps operator/(mint a) const { return fps(d) /= a;}
+  fps operator~() const {
+    fps r({d[0].inv()});
+    for (int i = 1; i < s; i <<= 1) r = r*mint(2) - (r*r*low(i<<1)).low(i<<1);
+    return r.low_(s);
+  }
+  fps& operator/=(const fps& a) { int w = s; d *= ~a; return d.low_(w);}
+  fps operator/(const fps& a) const { return fps(d) /= a;}
+  fps integ() const {
+    fps r;
+    rep(i, 0, s) r[i+1] = d[i]/(i+1);
+    return r;
+  }
+#undef s
+#undef d
+};
+
+
 //FRACTION
 template<typename T=ll>
 struct frac{
@@ -1481,6 +1525,77 @@ vector<T> Mo(vector<pair<int, int>> lr, D& d) {
   }
   return res;
 }
+
+
+//NTT
+struct NTT {
+  int ceil_pow2(int n) { int x = 0; while ((1U<<x) < (uint)(n)) x++; return x;}
+  int bsf(uint n) { return __builtin_ctz(n);}
+  const static int _g = 3; // primitive root !!!
+  void butterfly(vector<mint>& a) {
+    static mint g = _g; int n = (int)a.size(), h = ceil_pow2(n);
+    static bool first = true; static mint sum_e[30];
+    if (first) {
+      first = false; mint es[30], ies[30]; int cnt2 = bsf(mod - 1);
+      mint e = g.pow((mod - 1) >> cnt2), ie = ~e;
+      for (int i = cnt2; i >= 2; i--) {
+        es[i - 2] = e; ies[i - 2] = ie; e *= e; ie *= ie;
+      }
+      mint now = 1;
+      rep(i, 0, cnt2-1) { sum_e[i] = es[i] * now; now *= ies[i];}
+    }
+    for (int ph = 1; ph <= h; ph++) {
+      int w = 1<<(ph-1), p = 1<<(h-ph); mint now = 1;
+      rep(s, 0, w) {
+        int offset = s << (h - ph + 1);
+        for (int i = 0; i < p; i++) {
+          auto l = a[i + offset], r = a[i + offset + p] * now;
+          a[i + offset] = l + r; a[i + offset + p] = l - r;
+        }
+        now *= sum_e[bsf(~(uint)(s))];
+      }
+    }
+  }
+  void butterfly_inv(vector<mint>& a) {
+    static mint g = _g; int n = (int)a.size(), h = ceil_pow2(n);
+    static bool first = true; static mint sum_ie[30];
+    if (first) {
+      first = false; mint es[30], ies[30];
+      int cnt2 = bsf(mod - 1); mint e = g.pow((mod - 1) >> cnt2), ie = ~e;
+      for (int i = cnt2; i >= 2; i--) {
+        es[i - 2] = e; ies[i - 2] = ie; e *= e; ie *= ie;
+      }
+      mint now = 1; rep(i, 0, cnt2-1) { sum_ie[i] = ies[i] * now; now *= es[i];}
+    }
+    for (int ph = h; ph >= 1; ph--) {
+      int w = 1 << (ph - 1), p = 1 << (h - ph); mint inow = 1;
+      rep(s, 0, w) {
+        int offset = s << (h - ph + 1);
+        for (int i = 0; i < p; i++) {
+          auto l = a[i + offset], r = a[i + offset + p];
+          a[i + offset] = l + r;
+          a[i + offset + p] = (unsigned long long)(mod + l.x - r.x) * inow.x;
+        }
+        inow *= sum_ie[bsf(~(uint)(s))];
+      }
+    }
+  }
+  vector<mint> operator()(vector<mint> a, vector<mint> b) {
+    int n = (int)a.size(), m = (int)b.size();
+    if (!n || !m) return {};
+    if (min(n, m) <= 60) {
+      if (n < m) { swap(n, m); swap(a, b);}
+      vector<mint> ans(n+m-1); rep(i,0,n)rep(j,0,m) ans[i + j] += a[i] * b[j];
+      return ans;
+    }
+    int z = 1 << ceil_pow2(n+m-1);
+    a.resize(z); butterfly(a); b.resize(z); butterfly(b);
+    rep(i, 0, z) a[i] *= b[i];
+    butterfly_inv(a); a.resize(n + m - 1); mint iz = ~(mint(z));
+    rep(i, 0, n+m-1) a[i] *= iz;
+    return a;
+  }
+} ntt;
 
 
 //NTT
