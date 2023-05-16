@@ -855,6 +855,109 @@ struct frac{
 };
 
 
+//Fraction
+struct frac{
+  __int128_t num, den;
+  void simplify(){
+    __int128_t d = gcd(num, den);
+    num /= (den >= 0 ? d : -d);
+    den /= (den >= 0 ? d : -d);
+  }
+  frac(): num(0), den(1) {}
+  frac(const frac &a) { num = a.num; den = a.den; }
+  frac(__int128_t n): num(n), den(1) {}
+  // false を添えると約分されない
+  frac(__int128_t numerator, __int128_t denominator, bool with_simplify = true) : num(numerator), den(denominator) { if(with_simplify) simplify(); }
+  friend const frac operator+(const frac &a){ return a; }
+  friend const frac operator-(const frac &a){ return {-a.num, a.den, false}; }
+  friend const frac operator+(const frac &a, const frac &b){
+    return {a.num * b.den + b.num * a.den, a.den * b.den};
+  }
+  friend const frac operator-(const frac &a, const frac &b){
+    return {a.num * b.den - b.num * a.den, a.den * b.den};
+  }
+  friend const frac operator*(const frac &a, const frac &b){
+    __int128_t gcd_tmp1 = gcd(a.num, b.den), gcd_tmp2 = gcd(b.num, a.den);
+    return {(a.num / gcd_tmp1) * (b.num / gcd_tmp2), (a.den / gcd_tmp2) * (b.den / gcd_tmp1), false};
+  }
+  friend const frac operator/(const frac &a, const frac &b){
+    __int128_t gcd_tmp1 = gcd(a.num, b.num), gcd_tmp2 = gcd(b.den, a.den);
+    return {(b.num < 0 ? -1 : 1) * (a.num / gcd_tmp1) * (b.den / gcd_tmp2), (b.num < 0 ? -1 : 1) * (a.den / gcd_tmp2) * (b.num / gcd_tmp1), false};
+  }
+  friend bool operator==(const frac &a, const frac &b){ return a.num == b.num && a.den == b.den; }
+  friend bool operator!=(const frac &a, const frac &b){ return a.num != b.num || a.den != b.den; }
+  friend bool operator>(const frac &a, const frac &b) {
+    return a.num * b.den > b.num * a.den;
+  }
+  friend bool operator>=(const frac &a, const frac &b) {
+    return a.num * b.den >= b.num * a.den;
+  }
+  friend bool operator<(const frac &a, const frac &b) {
+    return a.num * b.den < b.num * a.den;
+  }
+  friend bool operator<=(const frac &a, const frac &b){
+    return a.num * b.den <= b.num * a.den;
+  }
+  frac &operator=(const frac &a){
+    num = a.num;
+    den = a.den;
+    return *this;
+  }
+  frac &operator+=(const frac &a){
+    num = num * a.den + a.num * den;
+    den *= a.den;
+    simplify();
+    return *this;
+  }
+  frac &operator-=(const frac &a){
+    num = num * a.den - a.num * den;
+    den *= a.den;
+    simplify();
+    return *this;
+  }
+  frac &operator*=(const frac &a){
+    __int128_t gcd_tmp1 = gcd(num, a.den), gcd_tmp2 = gcd(a.num, den);
+    num = (num / gcd_tmp1) * (a.num / gcd_tmp2);
+    den = (den / gcd_tmp2) * (a.den / gcd_tmp1);
+    return *this;
+  }
+  frac &operator/=(const frac &a){
+    __int128_t gcd_tmp1 = gcd(num, a.num), gcd_tmp2 = gcd(a.den, den);
+    num = (a.num < 0 ? -1 : 1) * (num / gcd_tmp1) * (a.den / gcd_tmp2);
+    den = (a.num < 0 ? -1 : 1) * (den / gcd_tmp2) * (a.num / gcd_tmp1);
+    return *this;
+  }
+  long long numerator() const { return num; }
+  long long denomitnator() const { return den; }
+  long long floor() const { return num / den; }
+  long long ceil() const { return (num + den - 1) / den; }
+  double real() const { return (double)num / den; }
+  frac abs() const { return {(num >= 0 ? num : -num), den, false}; }
+  frac inverse() const {
+    assert(num != 0);
+    return {(num >= 0 ? den : -den), (num >= 0 ? num : -num), false};
+  }
+};
+istream& operator>>(istream &is, frac &a) {
+  string buf;
+  is >> buf;
+  a.num = a.den = 0;
+  int i = (buf[0] == '-');
+  for(; i < buf.size() && buf[i] != '/'; i++) a.num = a.num * 10 + buf[i] - '0';
+  if(i == buf.size()) a.den = 1;
+  else for(i = i + 1; i < buf.size(); i++) a.den = a.den * 10 + buf[i] - '0';
+  if(buf[0] == '-') a.num *= -1;
+  a.simplify();
+  return is;
+}
+ostream& operator<<(ostream &os, const frac &a) {
+  if(a.den == 0) os << (a.num >= 0 ? "inf" : "-inf");
+  else if(a.den == 1) os << (long long)a.num;
+  else os << (long long)a.num << '/' << (long long)a.den;
+  return os;
+}
+
+
 //GCD,LCM
 ll gcd(ll a, ll b) { return b ? gcd(b, a%b) : a;}
 ll lcm(ll a, ll b) { return a/gcd(a, b)*b;}
