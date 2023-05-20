@@ -429,6 +429,23 @@ auto grid_bfs = [&](int si, int sj) -> vector<vector<int>> {
   return dist;
 };
 
+//BFS/TREE
+auto tree_bfs = [&]<typename T>(vector<vector<edge<T>>> g, int s=0) -> vector<long long> {
+  vector<long long> dist(g.size(), LINF);
+  queue<int> q;
+  dist[s] = 0; q.push(s);
+  while (!q.empty()) {
+    int v = q.front(); q.pop();
+    for (auto e : to[v]) {
+      if (dist[e.to] != LINF) continue;
+      dist[e.to] = dist[v]+e.cost;
+      q.push(e.to);
+    }
+  }
+  return dist;
+};
+
+
 //CHANGE MAX, MIN
 template<typename T1,typename T2>bool chmin(T1& x,const T2&y){if(x>y){x=y;return true;}else return false;}
 template<typename T1,typename T2>bool chmax(T1& x,const T2&y){if(x<y){x=y;return true;}else return false;}
