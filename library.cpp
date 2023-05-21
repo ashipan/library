@@ -829,12 +829,12 @@ struct fps : vector<mint> {
     for (int i = s-1; i >= 0; --i) r = r*x+d[i];
     return r;
   }
-  fps operator-() const { fps r(d); rep(i, 0, s) r[i] = -r[i]; return r;}
-  fps& operator+=(const fps& a) { rsz((int)a.size()); rep(i,0,a.size()) d[i] += a[i]; return d;}
-  fps& operator-=(const fps& a) { rsz((int)a.size()); rep(i,0,a.size()) d[i] -= a[i]; return d;}
+  fps operator-() const { fps r(d); rep(i,0,s) r[i] = -r[i]; return r;}
+  fps& operator+=(const fps& a) { rsz(int(a.size())); rep(i,0,a.size()) d[i] += a[i]; return d;}
+  fps& operator-=(const fps& a) { rsz(int(a.size())); rep(i,0,a.size()) d[i] -= a[i]; return d;}
   fps& operator*=(const fps& a) { return d = ntt(d, a);}
-  fps& operator*=(mint a) { rep(i, 0, s) d[i] *= a; return d;}
-  fps& operator/=(mint a) { rep(i, 0, s) d[i] /= a; return d;}
+  fps& operator*=(mint a) { rep(i,0,s) d[i] *= a; return d;}
+  fps& operator/=(mint a) { rep(i,0,s) d[i] /= a; return d;}
   fps operator+(const fps& a) const { return fps(d) += a;}
   fps operator-(const fps& a) const { return fps(d) -= a;}
   fps operator*(const fps& a) const { return fps(d) *= a;}
@@ -849,13 +849,16 @@ struct fps : vector<mint> {
   fps operator/(const fps& a) const { return fps(d) /= a;}
   fps integ() const {
     fps r;
-    rep(i, 0, s) r[i+1] = d[i]/(i+1);
+    rep(i,0,s) r[i+1] = d[i]/(i+1);
     return r;
   }
 #undef s
 #undef d
 };
-
+ostream& operator<<(ostream&o,const fps&a) {
+  rep(i, 0, a.size()) o<<(i?" ":"")<<a[i];
+  return o;
+}
 
 //FRACTION
 template<typename T=ll>
