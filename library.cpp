@@ -2214,7 +2214,7 @@ vector<long long> LIS(vector<T>& a){
 
 
 //Online_dynamic_connectivity
-const int NODE_SIZE = 303030 * 10;
+constexpr int NODE_SIZE = 303030 * 30;
 struct euler_tour_tree {
   using value_type = long long;
   using size_type = std::size_t;
