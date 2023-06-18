@@ -2204,12 +2204,15 @@ T Levenshtein_distance(string s, string t, T INSERT_COST=1, T DELETE_COST=1, T C
 //LIS
 // dp[i] := minimum element at length i
 template<typename T>
-vector<long long> LIS(vector<T>& a){
-  const long long LINF = 1001002003004005006ll;
-  int n = (int)a.size();
-  vector<long long> dp(n+1, LINF);
-  for (int i = 0; i < n; i++) *lower_bound(dp.begin(), dp.end(), a[i]) = a[i];
-  return dp;
+pair<int, vector<T>> LIS(vector<T>& a, bool monotonicity=true){
+  vector<T> lis;
+  for (auto p : a) {
+    typename vector<T>::iterator it;
+    if (monotonicity) it = lower_bound(lis.begin(), lis.end(), p);
+    else it = upper_bound(lis.begin(), lis.end(), p);
+    if (it == lis.end()) lis.emplace_back(p); else *it = p;
+  }
+  return make_pair((int)lis.size(), lis);
 }
 
 
