@@ -3049,6 +3049,35 @@ struct SEG{
 };
 
 
+//SEG2D
+template<class S, S (*op)(S, S), S (*e)()>
+struct SEG2D {
+  int H, W;
+  vector<SEG<S, op, e>> seg;
+  SEG2D(int h, int w) {
+    H = 1;
+    while (H <= h) H <<= 1;
+    seg.resize(2*H, SEG<S, op, e>(w));
+  }
+  void update(int h, int w, S val) {
+    h += H;
+    while (h > 0) {
+      seg[h].set(w, val);
+      h >>= 1;
+    }
+  }
+  S prod(int lh, int rh, int lw, int rw) {
+    S res = e();
+    lh += H; rh += H;
+    while (lh < rh) {
+      if (lh&1) res = op(seg[lh++].prod(lw, rw), res);
+      if (rh&1) res = op(seg[--rh].prod(lw, rw), res);
+      lh >>= 1; rh >>= 1;
+    }
+    return res;
+  }
+};
+
 
 //Topological sort - Tarjan.ver
 template<typename T>
