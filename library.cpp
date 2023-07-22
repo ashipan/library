@@ -2767,9 +2767,9 @@ struct RecSum{
     for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i+1].push_back(v[i][j]+d[i+1][j]);
     for(int j=0;j<w;j++)for(int i=0;i<h;i++) d[i+1][j+1] += d[i][j+1];
   }
-  // return [x1, x2) * [y1, y2)
-  T get(int x1, int x2, int y1, int y2) {
-    return d[y2][x2]-d[y1][x2]-d[y2][x1]+d[y1][x1];
+  // return [lh, rh) * [lw, rw)
+  T get(int lh, int rh, int lw, int rw) {
+    return d[rh][rw]-d[lh][rw]-d[rh][lw]+d[lh][lw];
   }
 };
 
