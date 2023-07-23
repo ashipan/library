@@ -93,13 +93,15 @@ struct Array{
   }
 };
 
+
 //Bellman-Ford
 template<typename T>
 bool find_negative_loop(vector<vector<edge<T>>> &g, int s){
+  const long long LINF = 1001002003004005006ll;
   int n = (int)g.size();
-  vector<T> d(n, numeric_limits<T>::max()); d[s] = 0;
+  vector<long long> d(n, LINF); d[s] = 0;
   for(int i = 0; i < n; i++) for(int j = 0; j < n; j++) for(edge<T> e : g[j]){
-    if(d[j] != numeric_limits<T>::max() && d[e.to] > d[j] + e.cost){
+    if(d[j] != LINF && d[e.to] > d[j] + e.cost){
       d[e.to] = d[j] + e.cost;
       if(i == n - 1) return true;
     }
@@ -120,17 +122,21 @@ bool find_negative_loop_whole(vector<vector<edge<T>>> &g){
 }
 template<typename T>
 vector<T> bellman(const vector<vector<edge<T>>> &g, int s){
+  const long long LINF = 1001002003004005006ll;
   int n = (int)g.size();
-  vector<T> d(n, numeric_limits<T>::max()); d[s] = 0;
-  while(true){
-    bool update = false;
+  vector<T> d(n, LINF); d[s] = 0;
+  bool upd = true;
+  int step = 0;
+  while(upd){
+    upd = false;
     for(int i = 0; i < n; i++) for(edge<T> e : g[i]){
-      if(d[i] != numeric_limits<T>::max() && d[e.to] > d[i] + e.cost){
+      if(d[i] != LINF && d[e.to] > d[i] + e.cost){
         d[e.to] = d[i] + e.cost;
-        update = true;
+        upd = true;
       }
     }
-    if(!update) break;
+    step++;
+    if (step > n) return {};
   }
   return d;
 }
