@@ -573,14 +573,13 @@ vector<T> cycleDetection(const vector<vector<edge<T>>> &g) {
         if (f(f, e.to, v)) return true;
       }
       else if (used[e.to] == 1) {
-        if (e.to == p) continue;
-        int cur = v;
+//        if (e.to == p) continue; // If prohibit cycle of size 2 or less
         cycle.emplace_back(v);
+        int cur = v;
         while (cur != e.to) {
           cycle.emplace_back(pre[cur]);
           cur = pre[cur];
         }
-        cycle.emplace_back(v);
         return true;
       }
     }
