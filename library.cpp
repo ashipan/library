@@ -559,6 +559,44 @@ struct CC {
 };
 
 
+//CycleDetection
+template<typename T=int>
+vector<T> cycleDetection(const vector<vector<edge<T>>> &g) {
+  int n = (int)g.size();
+  vector<int> cycle;
+  vector<int> used(n), pre(n);
+  auto dfs = [&](auto f, int v, int p=-1) -> bool {
+    used[v] = 1;
+    for (auto e : g[v]) {
+      if (used[e.to] == 0) {
+        pre[e.to] = v;
+        if (f(f, e.to, v)) return true;
+      }
+      else if (used[e.to] == 1) {
+        if (e.to == p) continue;
+        int cur = v;
+        cycle.emplace_back(v);
+        while (cur != e.to) {
+          cycle.emplace_back(pre[cur]);
+          cur = pre[cur];
+        }
+        cycle.emplace_back(v);
+        return true;
+      }
+    }
+    used[v] = 2;
+    return false;
+  };
+  for (int i = 0; i < n; i++) {
+    if (used[i] == 0 && dfs(dfs, i)) {
+      reverse(cycle.begin(), cycle.end());
+      return cycle;
+    }
+  }
+  return {};
+}
+
+
 //Diameter
 template<typename T>
 void dfs(int p, vector<vector<edge<T>>> &g, vector<T> &dist) {
