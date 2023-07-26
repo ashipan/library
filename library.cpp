@@ -3122,17 +3122,19 @@ struct SEG2D {
 };
 
 
-template<typename T>
+//Suffix_array
+template<typename T=string>
 struct suffix_array {
+  const T s;
   int n;
   vector<int> sa;
   int operator[](int i) const { return sa[i];}
-  suffix_array(const vector<int>&s, int upper) {
+  suffix_array(const vector<int>&s, int upper): s(s), n(int(s.size())) {
     assert(0 <= upper);
     for (int d : s) assert(0 <= d && d <= upper);
     sa = sa_is(s, upper);
   }
-  suffix_array(const vector<T>& s): n(int(s.size())) {
+  suffix_array(const vector<T>& s): s(s), n(int(s.size())) {
     vector<int> idx(n);
     iota(idx.begin(), idx.end(), 0);
     sort(idx.begin(), idx.end(), [&](int l, int r) { return s[l] < s[r]; });
@@ -3144,9 +3146,9 @@ struct suffix_array {
     }
     sa = sa_is(s2, now);
   }
-  suffix_array(const string& s): n(int(s.size())) {
+  suffix_array(const string& s): s(s), n(int(s.size())) {
     vector<int> s2(n);
-    for (int i = 0;  i < n; i++) s2[i] = s[i];
+    for (int i = 0; i < n; i++) s2[i] = s[i];
     sa = sa_is(s2, 255);
   }
   vector<int> sa_naive(const vector<int>& s) {
@@ -3282,6 +3284,31 @@ struct suffix_array {
     }
     return sa;
   }
+  bool lt_substr(const T &t, int si, int ti) {
+    int sn = int(s.size()), tn = int(t.size());
+    while (si < sn && ti < tn) {
+      if (s[si] < t[ti]) return 1;
+      if (s[si] > t[ti]) return 0;
+      si++; ti++;
+    }
+    return si == sn && ti < tn;
+  }
+  int lower_bound(T t) {
+    int l = -1, r = int(s.size());
+    while (r - l > 1) {
+      int m = (l + r)>>1;
+      if (lt_substr(t, sa[m], 0)) l = m;
+      else r = m;
+    }
+    return r;
+  }
+  int upper_bound(T t) {
+    t.back()++;
+    int res = lower_bound(t);
+    t.back()--;
+    return res;
+  }
+  int count(T t) { return upper_bound(t) - lower_bound(t);}
 };
 
 
