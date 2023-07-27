@@ -2887,7 +2887,7 @@ struct RollingHash {
       power2[i+1] = (power2[i]*base2)%mod2;
     }
   }
-  // get hash value of s[l:r]
+  // get hash value of s[l:r)
   inline long long get(int l, int r) const {
     long long res1 = hash1[r] - hash1[l]*power1[r-l]%mod1;
     long long res2 = hash2[r] - hash2[l]*power2[r-l]%mod2;
