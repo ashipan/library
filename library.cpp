@@ -2153,53 +2153,67 @@ struct LSEG{
 
 
 //LCA
-template<typename T>
-struct treeLCA{
-  int const MAX_LOG_V;
-  vector<vector<edge<T>>> g;
-  int root, vn;
-  vector<vector<int>> parent;
-  vector<int> depth;
-  treeLCA(vector<vector<edge<T>>> &_g, int _r=0):
-  MAX_LOG_V(35), g(_g), root(_r), vn((int)g.size()),
-  parent(MAX_LOG_V, vector<int>(vn, 0)), depth(vn, -1)
-  {depth[root] = 0; init(vn);}
-  void dfs(int v, int p, int d){
-    parent[0][v] = p;
-    depth[v] = d;
-    for(int i=0; i<g[v].size(); i++){
-      if(depth[ g[v][i].to ] >= 0) continue;
-      if(g[v][i].to != p) dfs(g[v][i].to, v, d+1);
+template<typename T=int>
+struct lca {
+  int n, root, MAX_LOG = 30;
+  vector<vector<int>> to;
+  vector<vector<T>> co;
+  vector<int> dep;
+  vector<T> costs;
+  vector<vector<int>> par;
+  lca(vector<vector<edge<T>>>& g):n(int(g.size())),to(n),co(n),dep(n),costs(n) {
+    par = vector<vector<int>>(n+1,vector<int>(MAX_LOG,n));
+    for (int v = 0; v < n; v++) {
+      for (auto e : g[v]) addEdge(v, e.to, e.cost);
+    }
+    init();
+  }
+  void addEdge(int a, int b, T c=0) {
+    to[a].push_back(b); co[a].push_back(c);
+  }
+  void dfs(int v, int d=0, T c=0, int p=-1) {
+    if (p != -1) par[v][0] = p;
+    dep[v] = d;
+    costs[v] = c;
+    for (int i = 0; i < to[v].size(); ++i) {
+      int u = to[v][i];
+      if (u == p) continue;
+      dfs(u, d+1, c+co[v][i], v);
     }
   }
-  void init(int V) {
-    dfs(root, -1, 0);
-    for(int k=0; k+1 < MAX_LOG_V; k++){
-      for(int v=0; v < V; v++) {
-        if(parent[k][v] < 0) parent[k+1][v] = -1;
-        else parent[k+1][v] = parent[k][parent[k][v]];
+  void init(int _root=0) {
+    root = _root;
+    dfs(root);
+    for (int i = 0; i < MAX_LOG-1; ++i) {
+      for (int v = 0; v < n; ++v) {
+        par[v][i+1] = par[par[v][i]][i];
       }
     }
   }
-  int lca(int u, int v) {
-    if(depth[u] > depth[v]) swap(u, v);
-    for(int k=0; k < MAX_LOG_V; k++){
-      if((depth[v] - depth[u]) >> k & 1){
-        v = parent[k][v];
-      }
+  int up(int v, int k) {
+    for (int i = MAX_LOG-1; i >= 0; --i) {
+      int len = 1<<i;
+      if (k >= len) k -= len, v = par[v][i];
     }
-    if(u == v) return u;
-    for(int k=MAX_LOG_V - 1; k>=0; k--){
-      if(parent[k][u] != parent[k][v]){
-        u = parent[k][u];
-        v = parent[k][v];
-      }
-    }
-    return parent[0][u];
+    return v;
   }
-  int dist(int u, int v){
-    int anc = lca(u, v);
-    return depth[u] + depth[v] - 2*depth[anc];
+  int operator()(int a, int b) {
+    if (dep[a] > dep[b]) swap(a,b);
+    b = up(b, dep[b]-dep[a]);
+    if (a == b) return a;
+    for (int i = MAX_LOG-1; i >= 0; --i) {
+      int na = par[a][i], nb = par[b][i];
+      if (na != nb) { a = na; b = nb;}
+    }
+    return par[a][0];
+  }
+  int length(int a, int b) {
+    int c = (*this)(a,b);
+    return dep[a]+dep[b]-dep[c]*2;
+  }
+  T dist(int a, int b) {
+    int c = (*this)(a,b);
+    return costs[a]+costs[b]-costs[c]*2;
   }
 };
 
