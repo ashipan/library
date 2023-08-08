@@ -2885,6 +2885,32 @@ struct Rerooting{
 };
 
 
+//Restore_shortest_path
+template<typename T=long long>
+vector<int> restore_shortest_path(const vector<vector<edge<T>>> &g, vector<T> dist, int s, int t) {
+  const long long LINF = 1001002003004005006ll;
+  vector<int> path = {t};
+  int n = (int)g.size();
+  vector<vector<edge<T>>> rg(n);
+  for(int v=0;v<n;v++) for(auto e:g[v]) rg[e.to].emplace_back(v,e.cost);
+  vector<int> used(n);
+  used[t] = 1;
+  while (t != s) {
+    for (auto e : rg[t]) {
+      if (used[e.to]) continue;
+      if (dist[e.to] + e.cost == dist[t]) {
+        t = e.to;
+        used[e.to] = 1;
+        path.emplace_back(e.to);
+        break;
+      }
+    }
+  }
+  reverse(path.begin(), path.end());
+  return path;
+}
+
+
 //RollingHash
 struct RollingHash {
   static const int base1 = 1007, base2 = 2009;
