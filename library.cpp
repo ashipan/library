@@ -2888,7 +2888,6 @@ struct Rerooting{
 //Restore_shortest_path
 template<typename T=long long>
 vector<int> restore_shortest_path(const vector<vector<edge<T>>> &g, vector<T> dist, int s, int t) {
-  const long long LINF = 1001002003004005006ll;
   vector<int> path = {t};
   int n = (int)g.size();
   vector<vector<edge<T>>> rg(n);
