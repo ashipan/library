@@ -636,8 +636,7 @@ vector<long long> dijkstra(const vector<vector<edge<T>>> &g, int s){
   priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> q;
   q.emplace(0, s);
   while(!q.empty()){
-    int v = q.top().second;
-    long long d = q.top().first; q.pop();
+    auto [d, v] = q.top(); q.pop();
     if(dist[v] <= d) continue;
     dist[v] = d;
     for(edge e : g[v]) q.emplace(e.cost+d, e.to);
