@@ -3915,3 +3915,10 @@ const ll LINF = 1001002003004005006ll;
 //const int mod = 1000000007;
 //const int mod = 998244353;
 
+
+#pragma GCC target("avx2")
+#pragma GCC optimize("O3")
+#pragma GCC optimize("unroll-loops")
+
+ios::sync_with_stdio(false);
+std::cin.tie(nullptr);
