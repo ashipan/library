@@ -2818,14 +2818,19 @@ struct RMQ{
 template<typename T>
 struct RecSum{
   int h, w;
-  vector<vector<T>> d;
-  RecSum(const vector<vector<T>> &v): h(v.size()), w(v[0].size()), d(h+1, {0}) {
-    for(int i=0;i<h;i++)for(int j=0;j<w;j++) d[i+1].push_back(v[i][j]+d[i+1][j]);
-    for(int j=0;j<w;j++)for(int i=0;i<h;i++) d[i+1][j+1] += d[i][j+1];
+  vector<vector<ll>> d;
+  RecSum(const vector<vector<T>> &v): h(v.size()), w(v[0].size()) {
+    d.resize(h+1);
+    for(int i = 0; i <= h; i++) d[i].resize(w+1);
+    for(int i = 0; i < h; i++) {
+      for(int j = 0; j < w; j++) {
+        d[i+1][j+1] = d[i][j+1] + d[i+1][j] - d[i][j] + v[i][j];
+      }
+    }
   }
   // return [lh, rh) * [lw, rw)
   T get(int lh, int rh, int lw, int rw) {
-    return d[rh][rw]-d[lh][rw]-d[rh][lw]+d[lh][lw];
+    return d[rh][rw] - d[lh][rw] - d[rh][lw] + d[lh][lw];
   }
 };
 
