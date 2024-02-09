@@ -3927,3 +3927,8 @@ const ll LINF = 1001002003004005006ll;
 
 ios::sync_with_stdio(false);
 std::cin.tie(nullptr);
+
+#ifdef __APPLE__
+freopen("input.txt", "r", stdin);
+freopen("output.txt", "w", stdout);
+#endif
