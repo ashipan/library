@@ -536,7 +536,7 @@ tuple<unordered_map<T, T>, unordered_map<T, T>> compress(vector<T> a) {
     mp[a[i]] = i; mpp[i] = a[i];
   }
   return {mp, mpp};
-
+}
 
 //Coodintate Compression
 template<typename T=int>
