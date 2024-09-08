@@ -536,7 +536,7 @@ tuple<unordered_map<T, T>, unordered_map<T, T>> compress(vector<T> a) {
     mp[a[i]] = i; mpp[i] = a[i];
   }
   return {mp, mpp};
-}
+
 
 //Coodintate Compression
 template<typename T=int>
@@ -2810,6 +2810,95 @@ struct RMQ{
     pair<ll, int> q = query(a, b, 0, 0, n);
     // update(q.second, LINF);
     return q.first;
+  }
+};
+
+
+//RangeSet
+template<typename T>
+struct RangeSet {
+  set<pair<T, T>> st;
+  T TINF;
+  RangeSet() {
+    TINF = numeric_limits<T>::max()/2;
+    st.emplace(TINF, TINF);
+    st.emplace(-TINF, -TINF);
+  }
+  // is [l, r] coverd?
+  bool contains(T l, T r) {
+    assert(l <= r);
+    auto it = prev(st.lower_bound({l+1, l+1}));
+    return it->first <= l && r <= it->second;
+  }
+  bool contains(T p) { return contains(p, p);}
+  // if [l, r] is covered -> return the segment
+  // else return pair(-TINF, -TINF)
+  pair<T, T> coverd_by(T l, T r) {
+    assert(l <= r);
+    auto it = prev(st.lower_bound({l+1, l+1}));
+    if (it->first <= l && r <= it->second) return *it;
+    return make_pair(-TINF, -TINF);
+  }
+  pair<T, T> covered_by(T p) { return coverd_by(p, p);}
+  // insert [l, r] and return the amount of increase
+  T insert(T l, T r) {
+    assert(l <= r);
+    auto it = prev(st.lower_bound({l+1, l+1}));
+    if (it->first <= l && r <= it->second) return T(0);
+    T erased_sum = T(0);
+    if (it->first <= l && l <= it->second+1) {
+      l = it->first;
+      erased_sum += it->second - it->first + 1;
+      it = st.erase(it);
+    } else it = next(it);
+    while (r > it->second) {
+      erased_sum += it->second - it->first + 1;
+      it = st.erase(it);
+    }
+    if (it->first - 1 <= r && r <= it->second) {
+      erased_sum += it->second - it->first + 1;
+      r = it->second;
+      st.erase(it);
+    }
+    st.emplace(l, r);
+    return r - l + 1 - erased_sum;
+  }
+  T insert(T p) { return insert(p, p);}
+  // erase [l, r] and return the amount of decrease
+  T erase(T l, T r) {
+    assert(l <= r);
+    auto it = prev(st.lower_bound({l+1, l+1}));
+    if (it->first <= l && r <= it->second) {
+      if (it->first < l) st.emplace(it->first, l-1);
+      if (r < it->second) st.emplace(r+1, it->second);
+      st.erase(it);
+      return r - 1 + 1;
+    }
+    T decreased_sum = T(0);
+    if (it->first <= l && l <= it->second) {
+      decreased_sum += it->second - l + 1;
+      if (it->first < l) st.emplace(it->first, l-1);
+      it = st.erase(it);
+    } else it = next(it);
+    while (it->second <= r) {
+      decreased_sum += it->second - it->first + 1;
+      it = st.erase(it);
+    }
+    if (it->first <= r && r <= it->second) {
+      decreased_sum += r - it->first + 1;
+      if (r < it->second) st.emplace(r+1, it->second);
+      st.erase(it);
+    }
+    return decreased_sum;
+  }
+  T erase(T p) { return erase(p, p);}
+  // number of range
+  int size() { return (int)st.size()-2;}
+  // mex [x, ~)
+  int mex(T x=0) {
+    auto it = prev(st.lower_bound({x+1, x+1}));
+    if (it->first <= x && x <= it->second) return it->second+1;
+    else return x;
   }
 };
 
